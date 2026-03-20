@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ビッグファイブカードゲーム – 印刷用カード一式（フレーム版）</title>
+<style>
+/* ================================================================
+   RESET & PRINT
+================================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+@page { size: 210mm 297mm; margin: 0; }
+body { font-family: 'Meiryo', 'MS Gothic', 'Yu Gothic', sans-serif; background: #555; }
+@media print {
+  body { background: white; }
+  .page-label { display: none; }
+  .page { margin: 0; page-break-after: always; break-after: page; }
+}
+
+/* ================================================================
+   PAGE LAYOUT (A4, 3×3)
+================================================================ */
+.page-label {
+  width: 210mm; margin: 0 auto;
+  background: #333; color: white;
+  text-align: center; font-size: 9px; padding: 3px;
+}
+.page {
+  width: 210mm; height: 297mm;
+  background: white;
+  display: grid;
+  grid-template-columns: repeat(3, 63mm);
+  grid-template-rows: repeat(3, 88mm);
+  padding: 16.5mm 10.5mm;
+  gap: 0;
+  margin: 0 auto 6px;
+  page-break-after: always;
+  break-after: page;
+}
+
+/* ================================================================
+   CARD CELL WRAPPER + 切り取り印
+================================================================ */
+.card-cell {
+  width: 63mm; height: 88mm;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cm {
+  position: absolute;
+  width: 2mm; height: 2mm;
+  z-index: 100;
+}
+.cm-tl { top:0;    left:0;  border-top:    0.8px solid rgba(0,0,0,0.5); border-left:   0.8px solid rgba(0,0,0,0.5); }
+.cm-tr { top:0;    right:0; border-top:    0.8px solid rgba(0,0,0,0.5); border-right:  0.8px solid rgba(0,0,0,0.5); }
+.cm-bl { bottom:0; left:0;  border-bottom: 0.8px solid rgba(0,0,0,0.5); border-left:   0.8px solid rgba(0,0,0,0.5); }
+.cm-br { bottom:0; right:0; border-bottom: 0.8px solid rgba(0,0,0,0.5); border-right:  0.8px solid rgba(0,0,0,0.5); }
+
+/* ================================================================
+   CARD OUTER
+   ★ フレームPNG画像を使用するため、CSS枠線は削除
+================================================================ */
+.card {
+  width: 59mm; height: 84mm;
+  border-radius: 4mm;
+  position: relative;
+  overflow: hidden;
+  background: #111;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.7);
+}
+.blank { background: #ccc; }
+
+/* ================================================================
+   フレームPNG – 最背面に配置
+   ★ カード全体を覆う背景として機能。内窓（透明部分）からコンテンツが見える
+================================================================ */
+.card-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  z-index: 0;
+  pointer-events: none;
+  display: block;
+}
+
+/* ================================================================
+   CARD BODY – カード全体を覆い、フレームと重なれるように配置
+   ★ 小さい padding でフレーム装飾部分に半透明要素がかかる
+================================================================ */
+.card-body {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2mm 4mm 2mm;
+}
+
+/* ================================================================
+   イラスト背景レイヤー（フレームPNGより前＝最背面に配置）
+   ★ フレームの内窓サイズに合わせ、HTMLでframe imgより前に置く
+================================================================ */
+.art-bg-layer {
+  position: absolute;
+  top: 13mm;
+  bottom: 12mm;
+  left: 7mm;
+  right: 7mm;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 1mm;
+}
+
+/* タイプ別グラデーション背景 */
+.atk .art-bg  { background: radial-gradient(ellipse at 50% 40%, #FFCC80 0%, #FF8A65 40%, #BF360C 100%); }
+.def .art-bg  { background: radial-gradient(ellipse at 50% 40%, #90CAF9 0%, #42A5F5 40%, #0D47A1 100%); }
+.fld .art-bg  { background: radial-gradient(ellipse at 50% 40%, #FFF9C4 0%, #A5D6A7 40%, #1B5E20 100%); }
+.drk .art-bg  { background: radial-gradient(ellipse at 50% 40%, #424242 0%, #1a1a1a 50%, #000 100%); }
+.pdk .art-bg  { background: radial-gradient(ellipse at 50% 40%, #CE93D8 0%, #7B1FA2 50%, #1a0030 100%); }
+.clu .art-bg  { background: radial-gradient(ellipse at 50% 40%, #FFF176 0%, #FFD54F 40%, #E65100 100%); }
+.blank .art-bg { background: #e0e0e0; }
+
+.art-bg {
+  position: absolute;
+  inset: 0;
+}
+
+/* ================================================================
+   イラストエリア（フレームの内窓サイズ・イラスト画像のみ）
+   ★ フレームより前面（card-body内、z-index:1）
+================================================================ */
+.art-area {
+  position: absolute;
+  top: 13mm;
+  bottom: 12mm;
+  left: 7mm;
+  right: 7mm;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 1mm;
+}
+
+/* 放射光線エフェクト */
+.art-rays {
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(
+    rgba(255,255,255,0.08) 0deg 10deg,
+    transparent 10deg 20deg
+  );
+}
+
+/* 実際の画像 */
+.art-img {
+  position: absolute;
+  inset: 0;
+}
+.art-img img {
+  width: 110%;
+  height: 110%;
+  margin-top: -5%;
+  margin-left: -5%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* プレースホルダー */
+.art-ph {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5mm;
+}
+.art-ph-icon { font-size: 20pt; opacity: 0.25; }
+.art-ph-text {
+  font-size: 5pt;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  line-height: 1.5;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+/* ================================================================
+   HEADER – タイプカラーバー（z-index:10 でフレームの下、艺術背景の上）
+================================================================ */
+.card-header {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  height: 8mm;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5mm;
+  gap: 1mm;
+  border-radius: 1.5mm;
+  margin-top: 1mm;   /* フレーム上部と少し重なる位置 */
+}
+.atk .card-header { background: rgba(191, 54,  12, 0.72); }
+.def .card-header { background: rgba( 13, 71, 161, 0.72); }
+.fld .card-header { background: rgba( 27, 94,  32, 0.72); }
+.drk .card-header { background: rgba(  0,  0,   0, 0.78); }
+.pdk .card-header { background: rgba( 74, 20, 140, 0.72); }
+.clu .card-header { background: rgba(191, 54,  12, 0.72); }
+
+/* タイプアイコン */
+.type-badge {
+  flex-shrink: 0;
+  width: 5.5mm; height: 5.5mm;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7.5pt;
+  line-height: 1;
+}
+
+/* カード名 */
+.card-name {
+  flex: 1;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.95), 1px 0 0 rgba(0,0,0,0.6);
+  line-height: 1.15;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.name-lg { font-size: 8.5pt; }
+.name-md { font-size: 7.5pt; }
+.name-sm { font-size: 6.5pt; }
+.name-xs { font-size: 5.5pt; }
+
+/* パワー値 */
+.power-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5mm;
+  background: rgba(0,0,0,0.30);
+  padding: 0.5mm 1.5mm;
+  border-radius: 2.5mm;
+}
+.power-label {
+  font-size: 4pt;
+  color: rgba(255,255,255,0.72);
+  font-weight: 900;
+}
+.power-num {
+  font-size: 9.5pt;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  line-height: 1;
+}
+
+/* ================================================================
+   アートスペーサー（ヘッダーと効果テキストの間でイラストを表示）
+================================================================ */
+.art-spacer {
+  flex: 1;
+  min-height: 28mm;  /* イラストが中央で大きく見えるよう確保 */
+  position: relative;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ================================================================
+   効果テキストボックス（z-index:10）
+================================================================ */
+.effect-box {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  padding: 1.5mm;
+  background: rgba(255,255,255,0.62);  /* 半透明でフレームが透けて見える */
+  border-radius: 1.5mm;
+  border: 1px solid rgba(255,255,255,0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8mm;
+  min-height: 11mm;
+}
+.drk .effect-box { background: rgba(10,10,10,0.68); border-color: rgba(255,255,255,0.10); }
+.pdk .effect-box { background: rgba(20,0,35,0.65); border-color: rgba(180,100,255,0.20); }
+
+.effect-title {
+  font-size: 4.5pt;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+.atk  .effect-title { color: #C62828; }
+.def  .effect-title { color: #0D47A1; }
+.fld  .effect-title { color: #1B5E20; }
+.drk  .effect-title { color: #FF5252; }
+.pdk  .effect-title { color: #CE93D8; }
+.clu  .effect-title { color: #BF360C; }
+
+.effect-divider {
+  height: 0.5px;
+  background: rgba(0,0,0,0.12);
+  flex-shrink: 0;
+}
+.drk .effect-divider, .pdk .effect-divider { background: rgba(255,255,255,0.12); }
+
+.effect-text {
+  font-size: 5pt;
+  font-style: italic;
+  color: #333;
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+}
+.drk .effect-text, .pdk .effect-text { color: #CCCCCC; }
+
+/* ================================================================
+   OCEANステータスボックス（z-index:10）
+================================================================ */
+.stat-box {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  margin-top: 1mm;
+  margin-bottom: 1mm;  /* フレーム下部と重なる位置 */
+  padding: 1mm 1.5mm;
+  background: rgba(0,0,0,0.55);  /* 半透明でフレームが透けて見える */
+  border-radius: 1.2mm;
+  border: 0.7px solid rgba(255,255,255,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5mm;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 1mm;
+}
+.stat-label {
+  font-size: 4.5pt;
+  font-weight: 900;
+  color: rgba(255,255,255,0.80);
+  width: 3mm;
+  flex-shrink: 0;
+  text-align: center;
+}
+.stat-bar-wrap {
+  flex: 1;
+  height: 2.5mm;
+  background: rgba(255,255,255,0.12);
+  border-radius: 1mm;
+  overflow: hidden;
+}
+.stat-bar {
+  height: 100%;
+  border-radius: 1mm;
+}
+.atk .stat-bar { background: linear-gradient(90deg, #FF8A65, #E53935); }
+.def .stat-bar { background: linear-gradient(90deg, #64B5F6, #1565C0); }
+.fld .stat-bar { background: linear-gradient(90deg, #81C784, #2E7D32); }
+.drk .stat-bar { background: linear-gradient(90deg, #9E9E9E, #424242); }
+.pdk .stat-bar { background: linear-gradient(90deg, #CE93D8, #6A1B9A); }
+.clu .stat-bar { background: linear-gradient(90deg, #FFD740, #E65100); }
+
+.stat-val {
+  font-size: 5pt;
+  font-weight: 900;
+  color: rgba(255,255,255,0.95);
+  width: 4mm;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.card-num-line {
+  font-size: 3.5pt;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+  margin-top: 0.3mm;
+  letter-spacing: 0.3px;
+}
+
+</style>
+</head>
+<body>
+<div id="output"></div>
+
+<script>
+// ============================================================
+//  フレーム画像マッピング（カードタイプ → PNG）
+// ============================================================
+const FRAME_MAP = {
+  atk: '攻撃.png',
+  def: '防御.png',
+  fld: 'フィールド.png',
+  drk: 'ダークトライアド.png',
+  pdk: 'ダークトライアド.png',
+  clu: 'フィールド.png',
+};
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function makeStars(total, maxVal, maxStars=5) {
+  const filled = Math.round((total / (maxVal * 5)) * maxStars);
+  let html = '';
+  for (let i = 0; i < maxStars; i++) {
+    html += `<span class="star ${i < filled ? 'star-on' : 'star-off'}">★</span>`;
+  }
+  return html;
+}
+
+function makeStatBars(labels, values, maxVal) {
+  return labels.map((l, i) => {
+    const v = Math.abs(values[i]);
+    const pct = Math.round((v / maxVal) * 100);
+    const display = values[i] !== undefined
+      ? (values[i] > 0 ? `+${values[i]}` : values[i] === 0 ? '0' : `${values[i]}`)
+      : `${values[i]}`;
+    return `<div class="stat-row">
+      <span class="stat-label">${l}</span>
+      <div class="stat-bar-wrap"><div class="stat-bar" style="width:${pct}%"></div></div>
+      <span class="stat-val">${display}</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+//  CARD HTML
+// ============================================================
+function makeCard(opts) {
+  const {type, typeLabel, typeIcon, name, imgName,
+         statValues, displayVals, maxVal,
+         flavorText, cardNum} = opts;
+
+  const dv = displayVals || statValues;
+  const charLen = name.length;
+  const namePx = charLen <= 4 ? 'name-lg'
+               : charLen <= 6 ? 'name-md'
+               : charLen <= 9 ? 'name-sm'
+               : 'name-xs';
+
+  // パワー値
+  let powerStr, powerLabel;
+  if (type === 'atk') {
+    const signed = dv.reduce((s, v) => s + v, 0);
+    powerStr = signed !== 0 ? `${signed}` : '±0';
+    powerLabel = 'ATK';
+  } else if (type === 'def') {
+    const sum = dv.reduce((s, v) => s + v, 0);
+    powerStr = `+${sum}`;
+    powerLabel = 'DEF';
+  } else if (type === 'fld') {
+    powerStr = statValues.reduce((s, v) => s + v, 0);
+    powerLabel = 'PTS';
+  } else {
+    powerStr = '⚡';
+    powerLabel = 'STT';
+  }
+
+  // イラスト
+  const artContent = imgName
+    ? `<img src="../images/${imgName}" alt="${name}">`
+    : `<div class="art-ph">
+        <div class="art-ph-icon">🎨</div>
+        <div class="art-ph-text">${name}<br>イラスト挿入予定</div>
+      </div>`;
+
+  const labels = ['O', 'C', 'E', 'A', 'N'];
+
+  // 効果ラベル
+  const effectLabel = type === 'atk' ? `⚔ ${typeLabel}効果`
+                    : type === 'def' ? `🛡 ${typeLabel}効果`
+                    : type === 'fld' ? `🎯 フィールド`
+                    : `${typeIcon} ${typeLabel}`;
+
+  // OCEANバー
+  const barValues = (type === 'atk') ? dv : statValues;
+  const barsHtml = makeStatBars(labels, barValues, maxVal);
+
+  // フレーム画像
+  const frameFile = FRAME_MAP[type] || '';
+
+  return `<div class="card-cell">
+  <div class="cm cm-tl"></div><div class="cm cm-tr"></div>
+  <div class="cm cm-bl"></div><div class="cm cm-br"></div>
+  <div class="card ${type}">
+
+    <!-- イラスト背景（最背面・フレームより後ろ） -->
+    <div class="art-bg-layer">
+      <div class="art-bg"></div>
+      <div class="art-rays"></div>
+    </div>
+
+    <!-- フレームPNG（背景の前・イラストの後ろ） -->
+    ${frameFile ? `<img class="card-frame" src="${frameFile}" alt="">` : ''}
+
+    <!-- カード本体（フレームの内窓に配置） -->
+    <div class="card-body">
+
+      <!-- イラスト（フレームの前面・内窓サイズ） -->
+      <div class="art-area">
+        <div class="art-img">${artContent}</div>
+      </div>
+
+      <!-- ヘッダー -->
+      <div class="card-header">
+        <div class="type-badge">${typeIcon}</div>
+        <div class="card-name ${namePx}">${name}</div>
+        <div class="power-wrap">
+          <span class="power-label">${powerLabel}</span>
+          <span class="power-num">${powerStr}</span>
+        </div>
+      </div>
+
+      <!-- スペーサー（イラスト見せる） -->
+      <div class="art-spacer"></div>
+
+      <!-- 効果テキスト -->
+      <div class="effect-box">
+        <div class="effect-title">${effectLabel}</div>
+        <div class="effect-divider"></div>
+        <div class="effect-text">${flavorText}</div>
+      </div>
+
+      <!-- OCEANステータス -->
+      <div class="stat-box">
+        ${barsHtml}
+        <div class="card-num-line">No.${cardNum} ／ ビッグファイブカードゲーム</div>
+      </div>
+
+    </div>
+
+  </div>
+</div>`;
+}
+
+function blankCard() {
+  return `<div class="card-cell">
+  <div class="cm cm-tl"></div><div class="cm cm-tr"></div>
+  <div class="cm cm-bl"></div><div class="cm cm-br"></div>
+  <div class="card blank"><div class="card-body"></div></div>
+</div>`;
+}
+
+// ============================================================
+//  CARD DATA
+// ============================================================
+const ATTACK_DATA = [
+  { name:'ポテトチップス',      sv:[0,10,5,0,10], dv:[0,-10,-5,0,-10], flavor:'止められない習慣が自制心を蝕む。', no:'A-001' },
+  { name:'ジャンクフード',      sv:[0,10,5,0,10], dv:[0,-10,-5,0,-10], flavor:'体にも心にも悪影響を与える食生活。', no:'A-002' },
+  { name:'デザート三昧',        sv:[0,5,0,0,5],   dv:[0,-5,0,0,-5],   flavor:'甘い誘惑に負け続ける習慣が根付く。', no:'A-003' },
+  { name:'ソーシャルゲーム',    sv:[5,15,0,0,10], dv:[-5,-15,0,0,-10], flavor:'時間と意志力が知らずに消えていく。', no:'A-004' },
+  { name:'SNS閲覧',            sv:[0,10,0,5,10], dv:[0,-10,0,-5,-10], flavor:'他者の視線に振り回され本質を見失う。', no:'A-005' },
+  { name:'睡眠不足',            sv:[0,10,5,0,15], dv:[0,-10,-5,0,-15], flavor:'万能の敵。まず眠れ。', no:'A-006' },
+  { name:'運動不足',            sv:[0,5,5,0,10],  dv:[0,-5,-5,0,-10],  flavor:'体を動かさないと心も鈍くなる。', no:'A-007' },
+  { name:'金銭欲求（強欲）',    sv:[0,5,0,15,5],  dv:[0,-5,0,-15,-5],  flavor:'お金への執着が人間関係を壊す。', no:'A-008' },
+  { name:'ギャンブル',          sv:[0,15,0,0,10], dv:[0,-15,0,0,-10],  flavor:'一瞬の刺激で大切なものを失う。', no:'A-009' },
+  { name:'過労・残業強要',      sv:[0,5,0,5,15],  dv:[0,-5,0,-5,-15],  flavor:'燃え尽きた先には何も残らない。', no:'A-010' },
+  { name:'アルコール依存',      sv:[0,10,0,5,10], dv:[0,-10,0,-5,-10], flavor:'逃避としての飲酒が全てを劣化させる。', no:'A-011' },
+  { name:'批判・否定',          sv:[5,5,0,5,15],  dv:[-5,-5,0,-5,-15], flavor:'言葉の暴力は最も静かで深い攻撃。', no:'A-012' },
+];
+
+const DEFENSE_DATA = [
+  { name:'瞑想',                    sv:[0,5,0,0,15],  flavor:'心を静め、感情を整える最強の習慣。', no:'D-001' },
+  { name:'マインドフルネス',        sv:[5,0,0,5,10],  flavor:'今この瞬間に集中する力を育てる。', no:'D-002' },
+  { name:'有酸素運動',              sv:[0,5,5,0,10],  flavor:'走れば気分が変わる、本当に。', no:'D-003' },
+  { name:'ウエイトトレーニング',    sv:[0,15,5,0,10], flavor:'鍛えた体は鍛えた心の証明になる。', no:'D-004' },
+  { name:'心拍トレーニング',        sv:[0,10,0,0,10], flavor:'ゾーンに入れば圧力にも揺るがない。', no:'D-005' },
+  { name:'プログラミング',          sv:[10,15,0,0,5], flavor:'論理思考と問題解決力が大きく伸びる。', no:'D-006' },
+  { name:'人助け・ボランティア',    sv:[0,0,5,15,5],  flavor:'与える人が、最も豊かになる。', no:'D-007' },
+  { name:'読書',                    sv:[15,5,0,0,5],  flavor:'本は最も安価な人生経験のパッケージ。', no:'D-008' },
+  { name:'挨拶・コミュ習慣',        sv:[0,0,10,5,0],  flavor:'「おはよう」の一言が信頼の礎になる。', no:'D-009' },
+  { name:'日記・自己分析',          sv:[10,5,0,0,5],  flavor:'書いて初めて、自分の思考が見える。', no:'D-010' },
+  { name:'感謝を伝える',            sv:[0,0,0,10,10], flavor:'「ありがとう」は最も安いギフト。', no:'D-011' },
+  { name:'早起き・規則正しい生活',  sv:[0,10,0,0,5],  flavor:'朝の1時間は夜の3時間に勝る。', no:'D-012' },
+  { name:'目標設定',                sv:[5,15,0,0,0],  flavor:'なりたい自分を決めることが最初の一歩。', no:'D-013' },
+];
+
+const FIELD_DATA = [
+  { name:'研究者・博士',    sv:[50,50,20,30,30], cat:'ライト',   flavor:'知識と探求心がカギ。コツコツ積み上げる力が武器。', no:'F-001', imgM:'チビ科学者キャラクター.png',    imgF:'科学者女.png' },
+  { name:'カウンセラー',    sv:[30,30,30,50,30], cat:'ライト',   flavor:'共感力と感情の安定が信頼を生む。',                 no:'F-002', imgM:'カウンセラー男.png',            imgF:'カウンセラー女.png' },
+  { name:'農家・職人',      sv:[30,50,20,30,40], cat:'ライト',   flavor:'継続する力と感情の安定が品質を生む。',             no:'F-003', imgM:'職人男.png',                    imgF:'職人女.png' },
+  { name:'芸術家',          sv:[50,20,30,30,40], cat:'ライト',   flavor:'型にはまらない発想が作品を生む。',                 no:'F-004', imgM:'芸術家男.png',                  imgF:'芸術家女.png' },
+  { name:'看護師・介護士',  sv:[30,40,30,50,30], cat:'ライト',   flavor:'思いやりと責任感が命を支える。',                   no:'F-005', imgM:'介護士男性.png',                imgF:'看護師女.png' },
+  { name:'起業家・経営者',  sv:[50,40,50,20,30], cat:'ミドル',   flavor:'孤独を恐れない強さが必要。',                       no:'F-006', imgM:'起業家男.png',                  imgF:'起業家女.png' },
+  { name:'営業職',          sv:[30,30,50,40,40], cat:'ミドル',   flavor:'断られてもめげない心が勝負。',                     no:'F-007', imgM:'営業男.png',                    imgF:'営業女.png' },
+  { name:'俳優・芸人',      sv:[50,20,50,30,40], cat:'ミドル',   flavor:'感情の振れ幅が最大の武器。',                       no:'F-008', imgM:'俳優・芸人男.png',              imgF:'俳優・芸人女.png' },
+  { name:'インフルエンサー',sv:[40,30,50,30,40], cat:'ミドル',   flavor:'自分を商品にする覚悟が必要。',                     no:'F-009', imgM:'F-009_インフルエンサー.png',    imgF:'F-009_インフルエンサー女.png' },
+  { name:'プロスポーツ',    sv:[30,50,30,30,50], cat:'ミドル',   flavor:'才能より継続。ストイックな自己管理が結果を決める。',no:'F-010', imgM:'プロスポーツマン男.png',         imgF:'プロスポーツマン女.png' },
+  { name:'政治家・官僚',    sv:[30,30,50,20,40], cat:'グレー⚠', flavor:'勝てるが幸せとは限らない。',                       no:'F-011', imgM:'政治家男.png',                  imgF:'政治家女.png' },
+  { name:'弁護士・検察官',  sv:[30,50,40,20,30], cat:'グレー⚠', flavor:'正義を貫くには孤立を恐れない心が必要。',           no:'F-012', imgM:'弁護士男.png',                  imgF:'弁護士女.png' },
+  { name:'外科医・救急医',  sv:[30,50,30,20,50], cat:'グレー⚠', flavor:'感情を抑制する力が命を救う。',                     no:'F-013', imgM:'外科医男.png',                  imgF:'外科医女.png' },
+  { name:'証券トレーダー',  sv:[30,50,30,20,50], cat:'グレー⚠', flavor:'勝ち続けるために人間味を削る。',                   no:'F-014', imgM:'証券トレーダー男.png',          imgF:'証券トレーダー女.png' },
+  { name:'ネットワークビジネス',sv:[30,30,50,20,40],cat:'グレー⚠',flavor:'「勝てる＝幸せ」ではない。',                    no:'F-015', imgM:'F-015_ネットワークビジネス.png', imgF:'F-015_ネットワークビジネス女.png' },
+];
+
+const DARK_DATA = [
+  { name:'サイコパス',       sv:[40,10,50,10,40], flavor:'発動条件: A≤10 かつ N≥40　→ 次ターン防御カード使用不可。', no:'S-001' },
+  { name:'ナルシスト',       sv:[30,20,50,10,30], flavor:'発動条件: E≥40 A≤20 O≥30　→ 次ターン手札から1枚捨てる。', no:'S-002' },
+  { name:'ドラマフォーカス', sv:[30,10,30,10,10], flavor:'発動条件: E≥30 A≤20 N≤20　→ 次ターン攻撃カードを2枚受ける。', no:'S-003' },
+];
+
+const PETIT_DATA = [
+  { name:'メンヘラ',      sv:[40,30,10,50,10], flavor:'発動条件: N≤20 かつ A≥30　→ 1ターンスキップ。', no:'S-004' },
+  { name:'ボトムギバー', sv:[20,10,30,50,20], flavor:'発動条件: A≥50 かつ N≤20　→ 防御カードを1枚捨てる。', no:'S-005' },
+  { name:'リアルダーク', sv:[30,10,50,30,20], flavor:'発動条件: C≤20 かつ A≤20　→ 他プレイヤーに攻撃カードを1枚渡す。', no:'S-006' },
+];
+
+const CLUSTER_DATA = [
+  { name:'アベレージ',    sv:[20,30,40,30,20], flavor:'全値が20〜30の範囲。突出した強みも弱みもない平均型。', no:'S-007' },
+  { name:'リザーブ',      sv:[10,40,30,40,40], flavor:'E≤20 かつ C≥30。内向的だが堅実・職人肌の強み。', no:'S-008' },
+  { name:'ロールモデル',  sv:[50,50,50,50,50], flavor:'O≥40 C≥40 A≥40 N≥40。理想的なバランス型。次ターン防御カードを1枚多く引ける。', no:'S-009' },
+  { name:'セルフセンター',sv:[20,20,50,20,30], flavor:'E≥40 かつ A≤20。行動力はあるが協力が課題。', no:'S-010' },
+];
+
+// ============================================================
+//  BUILD PAGES
+// ============================================================
+function paginate(items, size=9) {
+  const pages = [];
+  for (let i=0; i<items.length; i+=size) pages.push(items.slice(i, i+size));
+  return pages;
+}
+
+function buildPage(label, cardHtmlList) {
+  const padded = [...cardHtmlList];
+  while (padded.length < 9) padded.push(blankCard());
+  return `<div class="page-label">${label}（印刷時非表示）</div>
+          <div class="page">${padded.join('')}</div>`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const out = document.getElementById('output');
+  let html = '';
+
+  // 攻撃カード
+  const atkCards = ATTACK_DATA.map(d => makeCard({
+    type:'atk', typeLabel:'攻撃', typeIcon:'⚔',
+    name:d.name, imgName: d.img || null,
+    statValues:d.sv, displayVals:d.dv, maxVal:15,
+    flavorText:d.flavor, cardNum:d.no
+  }));
+  paginate(atkCards).forEach((pg,i) => { html += buildPage(`攻撃カード ${i+1}ページ`, pg); });
+
+  // 防御カード
+  const defCards = DEFENSE_DATA.map(d => makeCard({
+    type:'def', typeLabel:'防御', typeIcon:'🛡',
+    name:d.name, imgName: d.img || null,
+    statValues:d.sv, displayVals:null, maxVal:15,
+    flavorText:d.flavor, cardNum:d.no
+  }));
+  paginate(defCards).forEach((pg,i) => { html += buildPage(`防御カード ${i+1}ページ`, pg); });
+
+  // フィールドカード（男）
+  const fldCardsM = FIELD_DATA.map(d => makeCard({
+    type:'fld', typeLabel:'フィールド', typeIcon:'🎯',
+    name:d.name, imgName: d.imgM || null,
+    statValues:d.sv, displayVals:null, maxVal:50,
+    flavorText:`【${d.cat}】${d.flavor}`, cardNum:d.no + '♂'
+  }));
+  paginate(fldCardsM).forEach((pg,i) => { html += buildPage(`フィールドカード 男バージョン ${i+1}ページ`, pg); });
+
+  // フィールドカード（女）
+  const fldCardsF = FIELD_DATA.map(d => makeCard({
+    type:'fld', typeLabel:'フィールド', typeIcon:'🎯',
+    name:d.name, imgName: d.imgF || null,
+    statValues:d.sv, displayVals:null, maxVal:50,
+    flavorText:`【${d.cat}】${d.flavor}`, cardNum:d.no + '♀'
+  }));
+  paginate(fldCardsF).forEach((pg,i) => { html += buildPage(`フィールドカード 女バージョン ${i+1}ページ`, pg); });
+
+  // 状態カード
+  const stateCards = [
+    ...DARK_DATA.map(d => makeCard({
+      type:'drk', typeLabel:'ダークトライアド', typeIcon:'💀',
+      name:d.name, imgName: d.img || null,
+      statValues:d.sv, displayVals:null, maxVal:50,
+      flavorText:d.flavor, cardNum:d.no
+    })),
+    ...PETIT_DATA.map(d => makeCard({
+      type:'pdk', typeLabel:'プチダーク', typeIcon:'⚡',
+      name:d.name, imgName: d.img || null,
+      statValues:d.sv, displayVals:null, maxVal:50,
+      flavorText:d.flavor, cardNum:d.no
+    })),
+    ...CLUSTER_DATA.map(d => makeCard({
+      type:'clu', typeLabel:'クラスター', typeIcon:'⭐',
+      name:d.name, imgName: d.img || null,
+      statValues:d.sv, displayVals:null, maxVal:50,
+      flavorText:d.flavor, cardNum:d.no
+    })),
+  ];
+  paginate(stateCards).forEach((pg,i) => { html += buildPage(`状態カード ${i+1}ページ`, pg); });
+
+  out.innerHTML = html;
+});
+</script>
+</body>
+</html>

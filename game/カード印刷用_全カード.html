@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ビッグファイブカードゲーム – 印刷用カード一式</title>
+<style>
+/* ================================================================
+   RESET & PRINT
+================================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+@page { size: 210mm 297mm; margin: 0; }
+body { font-family: 'Meiryo', 'MS Gothic', 'Yu Gothic', sans-serif; background: #666; }
+@media print {
+  body { background: white; }
+  .page-label { display: none; }
+  .page { margin: 0; page-break-after: always; break-after: page; }
+}
+
+/* ================================================================
+   PAGE LAYOUT (A4, 3×3)
+================================================================ */
+.page-label {
+  width: 210mm; margin: 0 auto;
+  background: #333; color: white;
+  text-align: center; font-size: 9px; padding: 3px;
+}
+.page {
+  width: 210mm; height: 297mm;
+  background: white;
+  display: grid;
+  grid-template-columns: repeat(3, 63mm);
+  grid-template-rows: repeat(3, 88mm);
+  padding: 16.5mm 10.5mm;
+  gap: 0;
+  margin: 0 auto 6px;
+  page-break-after: always;
+  break-after: page;
+}
+
+/* ================================================================
+   CARD CELL WRAPPER + 切り取り印
+================================================================ */
+.card-cell {
+  width: 63mm; height: 88mm;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* L字切り取り印（セル四隅・2mm内側に収まるサイズ）
+   ★ 隣り合うカードの印が十字に見えないよう、
+     1枚ずつの「カギ型」として認識できる小サイズ */
+.cm {
+  position: absolute;
+  width: 2mm; height: 2mm;
+  z-index: 100;
+}
+.cm-tl { top:0;    left:0;  border-top:    0.8px solid rgba(0,0,0,0.5); border-left:   0.8px solid rgba(0,0,0,0.5); }
+.cm-tr { top:0;    right:0; border-top:    0.8px solid rgba(0,0,0,0.5); border-right:  0.8px solid rgba(0,0,0,0.5); }
+.cm-bl { bottom:0; left:0;  border-bottom: 0.8px solid rgba(0,0,0,0.5); border-left:   0.8px solid rgba(0,0,0,0.5); }
+.cm-br { bottom:0; right:0; border-bottom: 0.8px solid rgba(0,0,0,0.5); border-right:  0.8px solid rgba(0,0,0,0.5); }
+
+/* ================================================================
+   CARD OUTER – 金色グローフレーム
+   ★ 63→59mm / 88→84mm（2mm余白×2）でセル内に収める
+   　印は0〜2mmの白い余白の中に完全に収まる
+================================================================ */
+.card {
+  width: 59mm; height: 84mm;
+  padding: 3px;
+  border-radius: 4mm;
+  position: relative;
+  box-shadow: 0 0 8px rgba(0,0,0,0.5);
+}
+
+/* タイプ別グローカラー（外枠）– 全タイプキラキラ維持 */
+/* 攻撃：赤〜オレンジの炎グロー */
+.atk { background: linear-gradient(145deg,#FF8A65,#FF3D00,#FF6D00,#FFAB40,#FF3D00,#FF8A65);
+       box-shadow: 0 0 12px rgba(255,80,0,0.8), 0 0 5px rgba(255,60,0,0.5), 0 0 2px rgba(0,0,0,0.4); }
+/* 防御：青〜水色の冷たいグロー */
+.def { background: linear-gradient(145deg,#80D8FF,#0091EA,#40C4FF,#0D47A1,#0091EA,#80D8FF);
+       box-shadow: 0 0 12px rgba(0,145,234,0.8), 0 0 5px rgba(64,196,255,0.5), 0 0 2px rgba(0,0,0,0.4); }
+/* フィールド：緑〜黄緑の自然グロー */
+.fld { background: linear-gradient(145deg,#B9F6CA,#00C853,#69F0AE,#1B5E20,#00C853,#B9F6CA);
+       box-shadow: 0 0 12px rgba(0,200,83,0.8), 0 0 5px rgba(105,240,174,0.5), 0 0 2px rgba(0,0,0,0.4); }
+/* ダーク：深紅〜黒の不気味グロー */
+.drk { background: linear-gradient(145deg,#B71C1C,#1A1A1A,#880000,#000,#B71C1C,#1A1A1A);
+       box-shadow: 0 0 12px rgba(183,28,28,0.8), 0 0 5px rgba(100,0,0,0.6), 0 0 2px rgba(0,0,0,0.6); }
+/* プチダーク：紫〜ピンクの妖艶グロー */
+.pdk { background: linear-gradient(145deg,#EA80FC,#AA00FF,#CE93D8,#4A148C,#AA00FF,#EA80FC);
+       box-shadow: 0 0 12px rgba(170,0,255,0.8), 0 0 5px rgba(234,128,252,0.5), 0 0 2px rgba(0,0,0,0.4); }
+/* クラスター：黄金〜アンバーの貴重グロー */
+.clu { background: linear-gradient(145deg,#FFD740,#FF6F00,#FFAB00,#E65100,#FFD740,#FF6F00);
+       box-shadow: 0 0 12px rgba(255,171,0,0.8), 0 0 5px rgba(255,215,64,0.6), 0 0 2px rgba(0,0,0,0.4); }
+.blank { background: #ccc; }
+
+/* ================================================================
+   CARD BODY
+================================================================ */
+.card-body {
+  width: 100%; height: 100%;
+  border-radius: 3.5mm;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid rgba(255,255,255,0.6);
+}
+
+/* タイプ別カード本体背景 */
+.atk .card-body  { background: linear-gradient(160deg,#FFF8E1 0%,#FFE0B2 60%,#FFCC80 100%); }
+.def .card-body  { background: linear-gradient(160deg,#E3F2FD 0%,#BBDEFB 60%,#90CAF9 100%); }
+.fld .card-body  { background: linear-gradient(160deg,#E8F5E9 0%,#C8E6C9 60%,#A5D6A7 100%); }
+.drk .card-body  { background: linear-gradient(160deg,#1A1A1A 0%,#0D0D0D 100%); }
+.pdk .card-body  { background: linear-gradient(160deg,#F3E5F5 0%,#E1BEE7 60%,#CE93D8 100%); }
+.clu .card-body  { background: linear-gradient(160deg,#FFF8E1 0%,#FFECB3 60%,#FFD54F 100%); }
+.blank .card-body { background: #f0f0f0; }
+
+/* ================================================================
+   HEADER – タイプカラーバー
+================================================================ */
+.card-header {
+  flex-shrink: 0;
+  height: 9mm;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5mm;
+  gap: 1mm;
+  position: relative;
+}
+.atk .card-header { background: linear-gradient(90deg,#E65100,#FF6D00,#E65100); }
+.def .card-header { background: linear-gradient(90deg,#0D47A1,#1565C0,#0D47A1); }
+.fld .card-header { background: linear-gradient(90deg,#1B5E20,#2E7D32,#1B5E20); }
+.drk .card-header { background: linear-gradient(90deg,#1A1A1A,#333,#1A1A1A); }
+.pdk .card-header { background: linear-gradient(90deg,#4A148C,#6A1B9A,#4A148C); }
+.clu .card-header { background: linear-gradient(90deg,#BF360C,#D84315,#BF360C); }
+
+/* ヘッダー内：タイプアイコン */
+.type-badge {
+  flex-shrink: 0;
+  width: 6mm; height: 6mm;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8pt;
+  line-height: 1;
+}
+
+/* ヘッダー内：カード名 */
+.card-name {
+  flex: 1;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9), 1px 0 0 rgba(0,0,0,0.5);
+  line-height: 1.15;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.name-lg { font-size: 9pt; }
+.name-md { font-size: 8pt; }
+.name-sm { font-size: 7pt; }
+.name-xs { font-size: 5.5pt; }
+
+/* ヘッダー内：パワー値（ポケモンのHP的な） */
+.power-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5mm;
+  background: rgba(0,0,0,0.25);
+  padding: 0.5mm 1.5mm;
+  border-radius: 3mm;
+}
+.power-label {
+  font-size: 4pt;
+  color: rgba(255,255,255,0.75);
+  font-weight: 900;
+}
+.power-num {
+  font-size: 10pt;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  line-height: 1;
+}
+
+/* ================================================================
+   イラストエリア
+================================================================ */
+.art-area {
+  flex-shrink: 0;
+  margin: 1.5mm 1.5mm 0;
+  height: 32mm;
+  position: relative;
+  border-radius: 2mm;
+  overflow: hidden;
+  /* 内側にゴールドの二重枠 */
+  border: 2px solid rgba(255,220,0,0.9);
+  box-shadow: 0 0 0 1px rgba(180,140,0,0.6), inset 0 0 0 1px rgba(255,240,100,0.5);
+}
+
+/* イラスト背景（輝き演出） */
+.art-bg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.atk  .art-bg { background: radial-gradient(ellipse at 50% 60%, #FFCC80 0%, #FF8A65 50%, #E64A19 100%); }
+.def  .art-bg { background: radial-gradient(ellipse at 50% 60%, #90CAF9 0%, #42A5F5 50%, #1565C0 100%); }
+.fld  .art-bg { background: radial-gradient(ellipse at 50% 60%, #A5D6A7 0%, #66BB6A 50%, #2E7D32 100%); }
+.drk  .art-bg { background: radial-gradient(ellipse at 50% 60%, #424242 0%, #212121 50%, #000000 100%); }
+.pdk  .art-bg { background: radial-gradient(ellipse at 50% 60%, #CE93D8 0%, #AB47BC 50%, #4A148C 100%); }
+.clu  .art-bg { background: radial-gradient(ellipse at 50% 60%, #FFCC02 0%, #FF8F00 50%, #E65100 100%); }
+.blank .art-bg { background: #e0e0e0; }
+
+/* 放射光線エフェクト */
+.art-rays {
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(
+    rgba(255,255,255,0.10) 0deg 10deg,
+    transparent 10deg 20deg
+  );
+}
+
+/* 実際の画像 or プレースホルダー */
+.art-img {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.art-img img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+.art-ph {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1mm;
+}
+.art-ph-icon { font-size: 18pt; opacity: 0.3; }
+.art-ph-text {
+  font-size: 4.5pt;
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+  line-height: 1.5;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+/* 星レーティング（左下オーバーレイ） */
+.art-stars {
+  position: absolute;
+  bottom: 1.5mm;
+  left: 1.5mm;
+  display: flex;
+  gap: 0.4mm;
+  align-items: center;
+}
+.star {
+  font-size: 7pt;
+  text-shadow: 0 0 4px rgba(255,200,0,1), 0 1px 2px rgba(0,0,0,0.8);
+  line-height: 1;
+}
+.star-on  { color: #FFD700; }
+.star-off { color: rgba(255,255,255,0.25); }
+
+/* タイプ丸アイコン（右下オーバーレイ）*/
+.art-type-icon {
+  position: absolute;
+  bottom: 1mm;
+  right: 1.5mm;
+  width: 7mm; height: 7mm;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10pt;
+  border: 1.5px solid rgba(255,255,255,0.7);
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+.atk .art-type-icon { background: radial-gradient(#FF5722,#B71C1C); }
+.def .art-type-icon { background: radial-gradient(#42A5F5,#0D47A1); }
+.fld .art-type-icon { background: radial-gradient(#66BB6A,#1B5E20); }
+.drk .art-type-icon { background: radial-gradient(#616161,#000); }
+.pdk .art-type-icon { background: radial-gradient(#CE93D8,#4A148C); }
+.clu .art-type-icon { background: radial-gradient(#FFD740,#BF360C); }
+
+/* ================================================================
+   効果テキストボックス
+================================================================ */
+.effect-box {
+  flex: 1;
+  margin: 1.5mm 1.5mm 0;
+  padding: 1.5mm;
+  background: rgba(255,255,255,0.88);
+  border-radius: 1.5mm;
+  border: 1px solid rgba(0,0,0,0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8mm;
+  min-height: 0;
+}
+.drk .effect-box { background: rgba(20,20,20,0.92); border-color: rgba(255,255,255,0.08); }
+
+.effect-title {
+  font-size: 5pt;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  color: #333;
+  flex-shrink: 0;
+}
+.atk  .effect-title { color: #C62828; }
+.def  .effect-title { color: #0D47A1; }
+.fld  .effect-title { color: #1B5E20; }
+.drk  .effect-title { color: #FF5252; }
+.pdk  .effect-title { color: #6A1B9A; }
+.clu  .effect-title { color: #BF360C; }
+
+.effect-divider {
+  height: 0.5px;
+  background: rgba(0,0,0,0.10);
+  flex-shrink: 0;
+}
+.drk .effect-divider { background: rgba(255,255,255,0.10); }
+
+.effect-text {
+  font-size: 5pt;
+  font-style: italic;
+  color: #444;
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 8;
+  -webkit-box-orient: vertical;
+}
+.drk .effect-text { color: #AAAAAA; }
+
+/* ================================================================
+   OCANステータスボックス
+================================================================ */
+.stat-box {
+  flex-shrink: 0;
+  margin: 1mm 1.5mm 1.5mm;
+  padding: 1mm 1.5mm;
+  background: rgba(0,0,0,0.08);
+  border-radius: 1.2mm;
+  border: 0.7px solid rgba(255,255,255,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5mm;
+}
+.drk .stat-box { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); }
+
+/* OCEANバー行 */
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 1mm;
+}
+.stat-label {
+  font-size: 4.5pt;
+  font-weight: 900;
+  color: #666;
+  width: 3mm;
+  flex-shrink: 0;
+  text-align: center;
+}
+.drk .stat-label { color: #777; }
+
+.stat-bar-wrap {
+  flex: 1;
+  height: 2.5mm;
+  background: rgba(0,0,0,0.10);
+  border-radius: 1mm;
+  overflow: hidden;
+}
+.drk .stat-bar-wrap { background: rgba(255,255,255,0.08); }
+
+.stat-bar {
+  height: 100%;
+  border-radius: 1mm;
+  transition: width 0s;
+}
+.atk .stat-bar { background: linear-gradient(90deg,#FF8A65,#E53935); }
+.def .stat-bar { background: linear-gradient(90deg,#64B5F6,#1565C0); }
+.fld .stat-bar { background: linear-gradient(90deg,#81C784,#2E7D32); }
+.drk .stat-bar { background: linear-gradient(90deg,#9E9E9E,#424242); }
+.pdk .stat-bar { background: linear-gradient(90deg,#CE93D8,#6A1B9A); }
+.clu .stat-bar { background: linear-gradient(90deg,#FFD740,#E65100); }
+
+.stat-val {
+  font-size: 5pt;
+  font-weight: 900;
+  color: #333;
+  width: 4mm;
+  text-align: right;
+  flex-shrink: 0;
+}
+.drk .stat-val { color: #CCC; }
+
+/* カード番号 */
+.card-num-line {
+  font-size: 3.5pt;
+  color: #AAA;
+  text-align: center;
+  margin-top: 0.3mm;
+  letter-spacing: 0.3px;
+}
+.drk .card-num-line { color: #555; }
+
+
+/* ================================================================
+   フルカード画像レイアウト（画像をカード全体に広げる）
+================================================================ */
+
+/* card-body を位置の基準点にする */
+.card-body { position: relative; }
+
+/* イラストエリアをカード全体に広げる */
+.art-area {
+  position: absolute !important;
+  inset: 0 !important;
+  margin: 0 !important;
+  height: auto !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 3.5mm;
+  z-index: 0;
+}
+
+/* 画像を全体表示（トリミングなし） */
+.art-img img {
+  object-fit: contain !important;
+  object-position: center center !important;
+}
+
+/* ヘッダー・効果ボックス・ステータスを画像より前面に */
+.card-header {
+  position: relative;
+  z-index: 1;
+}
+.effect-box {
+  position: relative;
+  z-index: 1;
+}
+.stat-box {
+  position: relative;
+  z-index: 1;
+}
+
+/* ヘッダー：半透明 */
+.atk .card-header { background: rgba(230, 81,  0,  0.80) !important; }
+.def .card-header { background: rgba( 13, 71,161,  0.80) !important; }
+.fld .card-header { background: rgba( 27, 94, 32,  0.80) !important; }
+.drk .card-header { background: rgba( 26, 26, 26,  0.86) !important; }
+.pdk .card-header { background: rgba( 74, 20,140,  0.80) !important; }
+.clu .card-header { background: rgba(191, 54, 12,  0.80) !important; }
+
+/* 効果テキストボックス：白半透明・下部固定 */
+.effect-box           { background: rgba(255,255,255,0.72) !important; flex: 0 !important; min-height: 12mm !important; }
+.drk .effect-box      { background: rgba(  0,  0,  0,0.78) !important; flex: 0 !important; min-height: 12mm !important; }
+
+/* 画像表示用透明スペーサー */
+.art-spacer {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ステータスボックス：濃い半透明（パラメーター視認確保） */
+.stat-box             { background: rgba(  0,  0,  0,0.62) !important;
+                        border-color: rgba(255,255,255,0.20) !important; }
+.drk .stat-box        { background: rgba(  0,  0,  0,0.70) !important; }
+
+/* ステータス文字色：白系に変更（暗背景対応） */
+.stat-label           { color: rgba(255,255,255,0.80) !important; }
+.drk .stat-label      { color: rgba(255,255,255,0.80) !important; }
+.stat-val             { color: rgba(255,255,255,0.95) !important; }
+.drk .stat-val        { color: rgba(255,255,255,0.95) !important; }
+.stat-bar-wrap        { background: rgba(255,255,255,0.15) !important; }
+.drk .stat-bar-wrap   { background: rgba(255,255,255,0.15) !important; }
+.card-num-line        { color: rgba(255,255,255,0.50) !important; }
+.drk .card-num-line   { color: rgba(255,255,255,0.40) !important; }
+
+/* 星・タイプアイコン（イラスト上に重なるため非表示） */
+.art-stars, .art-type-icon { display: none !important; }
+
+</style>
+</head>
+<body>
+<div id="output"></div>
+
+<script>
+// ============================================================
+//  HELPERS
+// ============================================================
+function signStr(v) {
+  if (v > 0) return `+${v}`;
+  if (v === 0) return '0';
+  return `${v}`;
+}
+function signClass(v) {
+  return v > 0 ? 'sc-pos' : v < 0 ? 'sc-neg' : 'sc-zer';
+}
+
+// 星レーティング生成（maxStars段階で表示）
+function makeStars(total, maxVal, maxStars=5) {
+  const filled = Math.round((total / (maxVal * 5)) * maxStars);
+  let html = '';
+  for (let i = 0; i < maxStars; i++) {
+    html += `<span class="star ${i < filled ? 'star-on' : 'star-off'}">★</span>`;
+  }
+  return html;
+}
+
+// OCANバー生成
+function makeStatBars(labels, values, maxVal) {
+  return labels.map((l, i) => {
+    const v = Math.abs(values[i]);
+    const pct = Math.round((v / maxVal) * 100);
+    const display = values[i] !== undefined
+      ? (values[i] > 0 ? `+${values[i]}` : values[i] === 0 ? '0' : `${values[i]}`)
+      : `${values[i]}`;
+    return `<div class="stat-row">
+      <span class="stat-label">${l}</span>
+      <div class="stat-bar-wrap"><div class="stat-bar" style="width:${pct}%"></div></div>
+      <span class="stat-val">${display}</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+//  CARD HTML
+// ============================================================
+function makeCard(opts) {
+  const {type, typeLabel, typeIcon, name, imgName,
+         statValues, displayVals, maxVal,
+         flavorText, cardNum} = opts;
+
+  const dv = displayVals || statValues;
+  const charLen = name.length;
+  const namePx = charLen <= 4 ? 'name-lg'
+               : charLen <= 6 ? 'name-md'
+               : charLen <= 9 ? 'name-sm'
+               : 'name-xs';
+
+  // パワー値（ヘッダー右）
+  const totalEffect = dv.reduce((s, v) => s + Math.abs(v), 0);
+  let powerStr, powerLabel;
+  if (type === 'atk') {
+    const signed = dv.reduce((s, v) => s + v, 0);
+    powerStr = signed !== 0 ? `${signed}` : '±0';
+    powerLabel = 'ATK';
+  } else if (type === 'def') {
+    const sum = dv.reduce((s, v) => s + v, 0);
+    powerStr = `+${sum}`;
+    powerLabel = 'DEF';
+  } else if (type === 'fld') {
+    powerStr = statValues.reduce((s, v) => s + v, 0);
+    powerLabel = 'PTS';
+  } else {
+    powerStr = '⚡';
+    powerLabel = 'STT';
+  }
+
+  // 星レーティング（atk/defはdv、それ以外はsv）
+  const starValues = dv;
+  const starTotal = starValues.reduce((s, v) => s + Math.abs(v), 0);
+  const starsHtml = makeStars(starTotal, maxVal);
+
+  // イラスト
+  const artContent = imgName
+    ? `<img src="images/${imgName}" alt="${name}">`
+    : `<div class="art-ph">
+        <div class="art-ph-icon">🎨</div>
+        <div class="art-ph-text">${name}<br>イラスト挿入予定</div>
+      </div>`;
+
+  const labels = ['O', 'C', 'E', 'A', 'N'];
+
+  // 効果ラベル
+  const effectLabel = type === 'atk' ? `⚔ ${typeLabel}効果`
+                    : type === 'def' ? `🛡 ${typeLabel}効果`
+                    : type === 'fld' ? `🎯 フィールド`
+                    : `${typeIcon} ${typeLabel}`;
+
+  // OCEANバー（atkはdv、それ以外はsv）
+  const barValues = (type === 'atk') ? dv : statValues;
+  const barsHtml = makeStatBars(labels, barValues, maxVal);
+
+  return `<div class="card-cell">
+  <div class="cm cm-tl"></div><div class="cm cm-tr"></div>
+  <div class="cm cm-bl"></div><div class="cm cm-br"></div>
+  <div class="card ${type}">
+  <div class="card-body">
+
+    <!-- ヘッダー -->
+    <div class="card-header">
+      <div class="type-badge">${typeIcon}</div>
+      <div class="card-name ${namePx}">${name}</div>
+      <div class="power-wrap">
+        <span class="power-label">${powerLabel}</span>
+        <span class="power-num">${powerStr}</span>
+      </div>
+    </div>
+
+    <!-- イラストエリア -->
+    <div class="art-area">
+      <div class="art-bg"></div>
+      <div class="art-rays"></div>
+      <div class="art-img">${artContent}</div>
+      <div class="art-stars">${starsHtml}</div>
+      <div class="art-type-icon">${typeIcon}</div>
+    </div>
+
+    <!-- 画像表示エリア（透明スペーサー） -->
+    <div class="art-spacer"></div>
+
+    <!-- 効果テキストボックス -->
+    <div class="effect-box">
+      <div class="effect-title">${effectLabel}</div>
+      <div class="effect-divider"></div>
+      <div class="effect-text">${flavorText}</div>
+    </div>
+
+    <!-- OCEAN ステータスボックス -->
+    <div class="stat-box">
+      ${barsHtml}
+      <div class="card-num-line">No.${cardNum} ／ ビッグファイブカードゲーム</div>
+    </div>
+
+  </div>
+</div></div>`;
+}
+
+function blankCard() {
+  return `<div class="card-cell">
+  <div class="cm cm-tl"></div><div class="cm cm-tr"></div>
+  <div class="cm cm-bl"></div><div class="cm cm-br"></div>
+  <div class="card blank"><div class="card-body"></div></div>
+</div>`;
+}
+
+// ============================================================
+//  CARD DATA（変更なし）
+// ============================================================
+const ATTACK_DATA = [
+  { name:'ポテトチップス',      sv:[0,10,5,0,10], dv:[0,-10,-5,0,-10], flavor:'止められない習慣が自制心を蝕む。', no:'A-001' },
+  { name:'ジャンクフード',      sv:[0,10,5,0,10], dv:[0,-10,-5,0,-10], flavor:'体にも心にも悪影響を与える食生活。', no:'A-002' },
+  { name:'デザート三昧',        sv:[0,5,0,0,5],   dv:[0,-5,0,0,-5],   flavor:'甘い誘惑に負け続ける習慣が根付く。', no:'A-003' },
+  { name:'ソーシャルゲーム',    sv:[5,15,0,0,10], dv:[-5,-15,0,0,-10], flavor:'時間と意志力が知らずに消えていく。', no:'A-004' },
+  { name:'SNS閲覧',            sv:[0,10,0,5,10], dv:[0,-10,0,-5,-10], flavor:'他者の視線に振り回され本質を見失う。', no:'A-005' },
+  { name:'睡眠不足',            sv:[0,10,5,0,15], dv:[0,-10,-5,0,-15], flavor:'万能の敵。まず眠れ。', no:'A-006' },
+  { name:'運動不足',            sv:[0,5,5,0,10],  dv:[0,-5,-5,0,-10],  flavor:'体を動かさないと心も鈍くなる。', no:'A-007' },
+  { name:'金銭欲求（強欲）',    sv:[0,5,0,15,5],  dv:[0,-5,0,-15,-5],  flavor:'お金への執着が人間関係を壊す。', no:'A-008' },
+  { name:'ギャンブル',          sv:[0,15,0,0,10], dv:[0,-15,0,0,-10],  flavor:'一瞬の刺激で大切なものを失う。', no:'A-009' },
+  { name:'過労・残業強要',      sv:[0,5,0,5,15],  dv:[0,-5,0,-5,-15],  flavor:'燃え尽きた先には何も残らない。', no:'A-010' },
+  { name:'アルコール依存',      sv:[0,10,0,5,10], dv:[0,-10,0,-5,-10], flavor:'逃避としての飲酒が全てを劣化させる。', no:'A-011' },
+  { name:'批判・否定',          sv:[5,5,0,5,15],  dv:[-5,-5,0,-5,-15], flavor:'言葉の暴力は最も静かで深い攻撃。', no:'A-012' },
+];
+
+const DEFENSE_DATA = [
+  { name:'瞑想',                    sv:[0,5,0,0,15],  flavor:'心を静め、感情を整える最強の習慣。', no:'D-001' },
+  { name:'マインドフルネス',        sv:[5,0,0,5,10],  flavor:'今この瞬間に集中する力を育てる。', no:'D-002' },
+  { name:'有酸素運動',              sv:[0,5,5,0,10],  flavor:'走れば気分が変わる、本当に。', no:'D-003' },
+  { name:'ウエイトトレーニング',    sv:[0,15,5,0,10], flavor:'鍛えた体は鍛えた心の証明になる。', no:'D-004' },
+  { name:'心拍トレーニング',        sv:[0,10,0,0,10], flavor:'ゾーンに入れば圧力にも揺るがない。', no:'D-005' },
+  { name:'プログラミング',          sv:[10,15,0,0,5], flavor:'論理思考と問題解決力が大きく伸びる。', no:'D-006' },
+  { name:'人助け・ボランティア',    sv:[0,0,5,15,5],  flavor:'与える人が、最も豊かになる。', no:'D-007' },
+  { name:'読書',                    sv:[15,5,0,0,5],  flavor:'本は最も安価な人生経験のパッケージ。', no:'D-008' },
+  { name:'挨拶・コミュ習慣',        sv:[0,0,10,5,0],  flavor:'「おはよう」の一言が信頼の礎になる。', no:'D-009' },
+  { name:'日記・自己分析',          sv:[10,5,0,0,5],  flavor:'書いて初めて、自分の思考が見える。', no:'D-010' },
+  { name:'感謝を伝える',            sv:[0,0,0,10,10], flavor:'「ありがとう」は最も安いギフト。', no:'D-011' },
+  { name:'早起き・規則正しい生活',  sv:[0,10,0,0,5],  flavor:'朝の1時間は夜の3時間に勝る。', no:'D-012' },
+  { name:'目標設定',                sv:[5,15,0,0,0],  flavor:'なりたい自分を決めることが最初の一歩。', no:'D-013' },
+];
+
+const FIELD_DATA = [
+  { name:'研究者・博士',    sv:[50,50,20,30,30], cat:'ライト',   flavor:'知識と探求心がカギ。コツコツ積み上げる力が武器。', no:'F-001', img:'科学者女.png' },
+  { name:'カウンセラー',    sv:[30,30,30,50,30], cat:'ライト',   flavor:'共感力と感情の安定が信頼を生む。', no:'F-002', img:'カウンセラー女.png' },
+  { name:'農家・職人',      sv:[30,50,20,30,40], cat:'ライト',   flavor:'継続する力と感情の安定が品質を生む。', no:'F-003', img:'職人男.png' },
+  { name:'芸術家',          sv:[50,20,30,30,40], cat:'ライト',   flavor:'型にはまらない発想が作品を生む。', no:'F-004', img:'芸術家女.png' },
+  { name:'看護師・介護士',  sv:[30,40,30,50,30], cat:'ライト',   flavor:'思いやりと責任感が命を支える。', no:'F-005', img:'看護師女.png' },
+  { name:'起業家・経営者',  sv:[50,40,50,20,30], cat:'ミドル',   flavor:'孤独を恐れない強さが必要。', no:'F-006', img:'起業家男.png' },
+  { name:'営業職',          sv:[30,30,50,40,40], cat:'ミドル',   flavor:'断られてもめげない心が勝負。', no:'F-007', img:'営業男.png' },
+  { name:'俳優・芸人',      sv:[50,20,50,30,40], cat:'ミドル',   flavor:'感情の振れ幅が最大の武器。', no:'F-008', img:'俳優・芸人男.png' },
+  { name:'インフルエンサー',sv:[40,30,50,30,40], cat:'ミドル',   flavor:'自分を商品にする覚悟が必要。', no:'F-009', img:'F-009_インフルエンサー.png' },
+  { name:'プロスポーツ',    sv:[30,50,30,30,50], cat:'ミドル',   flavor:'才能より継続。ストイックな自己管理が結果を決める。', no:'F-010' },
+  { name:'政治家・官僚',    sv:[30,30,50,20,40], cat:'グレー⚠', flavor:'勝てるが幸せとは限らない。', no:'F-011', img:'政治家男.png' },
+  { name:'弁護士・検察官',  sv:[30,50,40,20,30], cat:'グレー⚠', flavor:'正義を貫くには孤立を恐れない心が必要。', no:'F-012', img:'弁護士男.png' },
+  { name:'外科医・救急医',  sv:[30,50,30,20,50], cat:'グレー⚠', flavor:'感情を抑制する力が命を救う。', no:'F-013', img:'外科医男.png' },
+  { name:'証券トレーダー',  sv:[30,50,30,20,50], cat:'グレー⚠', flavor:'勝ち続けるために人間味を削る。', no:'F-014', img:'証券トレーダー男.png' },
+  { name:'ネットワークビジネス',sv:[30,30,50,20,40],cat:'グレー⚠',flavor:'「勝てる＝幸せ」ではない。', no:'F-015', img:'F-015_ネットワークビジネス.png' },
+];
+
+const DARK_DATA = [
+  { name:'サイコパス',       sv:[40,10,50,10,40], flavor:'発動条件: A≤10 かつ N≥40　→ 次ターン防御カード使用不可。', no:'S-001' },
+  { name:'ナルシスト',       sv:[30,20,50,10,30], flavor:'発動条件: E≥40 A≤20 O≥30　→ 次ターン手札から1枚捨てる。', no:'S-002' },
+  { name:'ドラマフォーカス', sv:[30,10,30,10,10], flavor:'発動条件: E≥30 A≤20 N≤20　→ 次ターン攻撃カードを2枚受ける。', no:'S-003' },
+];
+
+const PETIT_DATA = [
+  { name:'メンヘラ',      sv:[40,30,10,50,10], flavor:'発動条件: N≤20 かつ A≥30　→ 1ターンスキップ。', no:'S-004' },
+  { name:'ボトムギバー', sv:[20,10,30,50,20], flavor:'発動条件: A≥50 かつ N≤20　→ 防御カードを1枚捨てる。', no:'S-005' },
+  { name:'リアルダーク', sv:[30,10,50,30,20], flavor:'発動条件: C≤20 かつ A≤20　→ 他プレイヤーに攻撃カードを1枚渡す。', no:'S-006' },
+];
+
+const CLUSTER_DATA = [
+  { name:'アベレージ',    sv:[20,30,40,30,20], flavor:'全値が20〜30の範囲。突出した強みも弱みもない平均型。', no:'S-007' },
+  { name:'リザーブ',      sv:[10,40,30,40,40], flavor:'E≤20 かつ C≥30。内向的だが堅実・職人肌の強み。', no:'S-008' },
+  { name:'ロールモデル',  sv:[50,50,50,50,50], flavor:'O≥40 C≥40 A≥40 N≥40。理想的なバランス型。次ターン防御カードを1枚多く引ける。', no:'S-009' },
+  { name:'セルフセンター',sv:[20,20,50,20,30], flavor:'E≥40 かつ A≤20。行動力はあるが協力が課題。', no:'S-010' },
+];
+
+// ============================================================
+//  BUILD PAGES
+// ============================================================
+function paginate(items, size=9) {
+  const pages = [];
+  for (let i=0; i<items.length; i+=size) pages.push(items.slice(i, i+size));
+  return pages;
+}
+
+function buildPage(label, cardHtmlList) {
+  const padded = [...cardHtmlList];
+  while (padded.length < 9) padded.push(blankCard());
+  return `<div class="page-label">${label}（印刷時非表示）</div>
+          <div class="page">${padded.join('')}</div>`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const out = document.getElementById('output');
+  let html = '';
+
+  // 攻撃カード
+  const atkCards = ATTACK_DATA.map(d => makeCard({
+    type:'atk', typeLabel:'攻撃', typeIcon:'⚔',
+    name:d.name, imgName: d.img || null,
+    statValues:d.sv, displayVals:d.dv, maxVal:15,
+    flavorText:d.flavor, cardNum:d.no
+  }));
+  paginate(atkCards).forEach((pg,i) => { html += buildPage(`攻撃カード ${i+1}ページ`, pg); });
+
+  // 防御カード
+  const defCards = DEFENSE_DATA.map(d => makeCard({
+    type:'def', typeLabel:'防御', typeIcon:'🛡',
+    name:d.name, imgName: d.img || null,
+    statValues:d.sv, displayVals:null, maxVal:15,
+    flavorText:d.flavor, cardNum:d.no
+  }));
+  paginate(defCards).forEach((pg,i) => { html += buildPage(`防御カード ${i+1}ページ`, pg); });
+
+  // フィールドカード
+  const fldCards = FIELD_DATA.map(d => makeCard({
+    type:'fld', typeLabel:'フィールド', typeIcon:'🎯',
+    name:d.name, imgName: d.img || null,
+    statValues:d.sv, displayVals:null, maxVal:50,
+    flavorText:`【${d.cat}】${d.flavor}`, cardNum:d.no
+  }));
+  paginate(fldCards).forEach((pg,i) => { html += buildPage(`フィールドカード ${i+1}ページ`, pg); });
+
+  // 状態カード
+  const stateCards = [
+    ...DARK_DATA.map(d => makeCard({
+      type:'drk', typeLabel:'ダークトライアド', typeIcon:'💀',
+      name:d.name, imgName: d.img || null,
+      statValues:d.sv, displayVals:null, maxVal:50,
+      flavorText:d.flavor, cardNum:d.no
+    })),
+    ...PETIT_DATA.map(d => makeCard({
+      type:'pdk', typeLabel:'プチダーク', typeIcon:'⚡',
+      name:d.name, imgName: d.img || null,
+      statValues:d.sv, displayVals:null, maxVal:50,
+      flavorText:d.flavor, cardNum:d.no
+    })),
+    ...CLUSTER_DATA.map(d => makeCard({
+      type:'clu', typeLabel:'クラスター', typeIcon:'⭐',
+      name:d.name, imgName: d.img || null,
+      statValues:d.sv, displayVals:null, maxVal:50,
+      flavorText:d.flavor, cardNum:d.no
+    })),
+  ];
+  paginate(stateCards).forEach((pg,i) => { html += buildPage(`状態カード ${i+1}ページ`, pg); });
+
+  out.innerHTML = html;
+});
+</script>
+</body>
+</html>

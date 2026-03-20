@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>幻想からくり時計 v3.3 - Mobile Enhanced</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; color: #fff; font-family: serif; touch-action: manipulation; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        
+        /* 黄金ボタン - 指で押しやすいサイズに微調整 */
+        #golden-button { 
+            position: absolute; left: 50%; bottom: 33%; transform: translateX(-50%); 
+            width: 7vw; height: 7vw; min-width: 22px; min-height: 22px; max-width: 60px; max-height: 60px;
+            background: radial-gradient(circle, #fff380, #b8860b); 
+            border-radius: 50%; border: 3px solid #5c4033 ; cursor: pointer; z-index: 50; 
+            box-shadow:inset 0 0 8px rgba(255, 255, 255, 0.5), /* 内側に光を当てて「球体感」を出す */
+        0 0 15px rgba(0, 0, 0, 0.6);             /* 外側に暗い影を落として「浮遊感」を出す */
+}
+        #golden-button.playing { display: none !important; }
+
+        /* 設定ボタン */
+        #config-btn { 
+            position: absolute; top: 20px; right: 20px; width: 50px; height: 50px; 
+            background: rgba(255,255,255,0.2); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; z-index: 100; 
+            cursor: pointer; border: 1px solid #aaa; font-size: 24px;
+        }
+
+        /* 設定パネル - 全画面・半透明・モバイル対応 */
+        #panel { 
+            position: absolute; top: 0; left: 0; width: 70vw; height: 110vh; 
+            background: rgba(10,10,10,0.3); padding: 20px; box-sizing: border-box;
+            z-index: 101; overflow-y: auto; -webkit-overflow-scrolling: touch;
+            display: flex; flex-direction: column;
+        }
+        .hidden { display: none !important; }
+
+        h3 { border-bottom: 1px solid gold; padding-bottom: 10px; margin-top: 10px; }
+
+        /* タブ・ボタンの大型化 (40px以上) */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+        .tabs button { 
+            flex: 1; height: 33px; font-size: 13px; cursor: pointer; 
+            background: #333; color: #fff; border: 1px solid #555; border-radius: 8px;
+        }
+        
+        .ctrl { display: flex; align-items: center; justify-content: space-between; margin: 7px 0; font-size: 16px; }
+        .ctrl button { width: 60px; height: 33px; font-size: 20px; background: #444; color: white; border: 1px solid #666; border-radius: 6px; }
+        
+        select, input[type="number"] { height: 25px; font-size: 16px; background: #222; color: #fff; border: 1px solid #555; border-radius: 4px; padding: 0 10px; }
+        input[type="color"] { width: 40px; height: 25px; border: none; background: none; }
+
+        .sched-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; }
+        .sched-item { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 2px 4px; border-radius: 3px; }
+
+        .close-btn { width: 100%; min-height: 60px; margin: 15px 0; background: gold; border: none; font-weight: bold; font-size: 18px; cursor: pointer; color: #000; border-radius: 10px; }
+        .reset-btn { width: 100%; min-height: 33px; margin-top: 25px; background: #800; border: 1px solid #f55; color: #fff; font-size: 12px; cursor: pointer; border-radius: 8px; }
+        
+        #vid-list { font-size: 14px; color: #ccc; margin-top: 15px; background: #222; padding: 10px; border-radius: 8px; line-height: 1.6; }
+        .vid-item { border-bottom: 1px solid #333; padding: 5px 0; }
+        
+        hr { border: 0; border-top: 1px solid #444; margin: 20px 0; }
+        input[type="file"] { font-size: 14px; padding: 10px 0; width: 100%; }
+    </style>
+</head>
+<body onmousedown="initAudio()">
+    <div style="display:none;">
+        <img id="source-img">
+        <video id="source-vid" playsinline muted></video>
+    </div>
+    <canvas id="clockCanvas"></canvas>
+    <div id="golden-button" onclick="playManual()"></div>
+    <div id="config-btn" onclick="togglePanel()">⚙</div>
+
+    <div id="panel" class="hidden">
+        <h3>時計設定</h3>
+        <div style="margin-bottom:12px;">
+            <div style="font-size:12px; color:#aaa; margin-bottom:5px;">設定パターン</div>
+            <div style="display:flex; gap:6px;">
+                <button id="ptn-1" onclick="loadPattern(1)" style="flex:1; height:36px; font-size:11px; font-weight:bold; border-radius:8px; border:1px solid #aaa; cursor:pointer;"></button>
+                <button id="ptn-2" onclick="loadPattern(2)" style="flex:1; height:36px; font-size:11px; font-weight:bold; border-radius:8px; border:1px solid #aaa; cursor:pointer;"></button>
+                <button id="ptn-3" onclick="loadPattern(3)" style="flex:1; height:36px; font-size:11px; font-weight:bold; border-radius:8px; border:1px solid #aaa; cursor:pointer;"></button>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:5px;">
+                <input id="pname-1" type="text" maxlength="8" placeholder="名前1" oninput="savePatternName(1,this.value)" style="flex:1; font-size:11px; text-align:center; background:#222; color:#fff; border:1px solid #555; border-radius:4px; height:22px; padding:0 4px;">
+                <input id="pname-2" type="text" maxlength="8" placeholder="名前2" oninput="savePatternName(2,this.value)" style="flex:1; font-size:11px; text-align:center; background:#222; color:#fff; border:1px solid #555; border-radius:4px; height:22px; padding:0 4px;">
+                <input id="pname-3" type="text" maxlength="8" placeholder="名前3" oninput="savePatternName(3,this.value)" style="flex:1; font-size:11px; text-align:center; background:#222; color:#fff; border:1px solid #555; border-radius:4px; height:22px; padding:0 4px;">
+            </div>
+        </div>
+        <div class="tabs">
+            <button onclick="showTab('design')">外観</button>
+            <button onclick="showTab('media')">動画</button>
+            <button onclick="showTab('schedule')">時刻</button>
+        </div>
+        
+        <div id="tab-design" class="tab-content">
+            <div class="ctrl">形状: <select id="shape" onchange="updateBaseConfig()"></select></div>
+            <div class="ctrl">針形: <select id="handDesign" onchange="updateBaseConfig()"></select></div>
+            <div class="ctrl">数字: <select id="indexType" onchange="updateBaseConfig()"></select></div>
+            <div class="ctrl">枠色: <input type="color" id="colorFrame" onchange="updateBaseConfig()"></div>
+            <div class="ctrl">数字色: <input type="color" id="colorText" onchange="updateBaseConfig()"></div>
+            <div class="ctrl">針色: <input type="color" id="colorHand" onchange="updateBaseConfig()"></div>
+            <hr>
+            <button class="reset-btn" onclick="resetAllData()">⚠️ 全データをリセットする</button>
+        </div>
+
+        <div id="tab-media" class="tab-content hidden">
+            <div class="ctrl">対象: <select id="mediaTarget" style="width: 70%;" onchange="switchMediaTarget()">
+                <option value="layer0">背景画像</option>
+                <option value="vid_1">動画 1</option><option value="vid_2">動画 2</option>
+                <option value="vid_3">動画 3</option><option value="vid_4">動画 4</option>
+                <option value="vid_5">動画 5</option><option value="vid_6">動画 6</option>
+                <option value="vid_7">動画 7 ★レア</option><option value="vid_8">動画 8 ★レア</option>
+            </select></div>
+            <button id="preview-toggle" onclick="togglePreview()" style="width:100%; height:50px; margin:10px 0; font-size:13px;">👁 プレビュー表示切替</button>
+            <div class="ctrl">拡大: <div><button onclick="stepAdj('s',-0.01)">-</button> <button onclick="stepAdj('s',0.01)">+</button></div></div>
+            <div class="ctrl">左右: <div><button onclick="stepAdj('x',-2)">-</button> <button onclick="stepAdj('x',2)">+</button></div></div>
+            <div class="ctrl">上下: <div><button onclick="stepAdj('y',-2)">-</button> <button onclick="stepAdj('y',2)">+</button></div></div>
+            <hr>
+            動画登録:<br><input type="file" accept="video/mp4" onchange="uploadVideoDirect(this)">
+            <div id="vid-list">読み込み中...</div>
+            <hr>
+            背景登録:<br><input type="file" accept="image/*" onchange="uploadImage(this)">
+        </div>
+
+        <div id="tab-schedule" class="tab-content hidden">
+            <div id="schedGrid" class="sched-grid"></div>
+        </div>
+        
+        <button class="close-btn" onclick="togglePanel()">設定を閉じる</button>
+    </div>
+
+    <script>
+        let db, audioCtx;
+        const canvas = document.getElementById('clockCanvas');
+        const ctx = canvas.getContext('2d');
+        const sourceImg = document.getElementById('source-img');
+        const sourceVid = document.getElementById('source-vid');
+        const captureCanvas = document.createElement('canvas');
+        const captureCtx = captureCanvas.getContext('2d');
+        let previewImage = null;
+        let lastS = -1;
+
+        let currentPattern = parseInt(localStorage.getItem('clock_v33_pattern') || '1');
+        let patternNames = JSON.parse(localStorage.getItem('clock_v33_pnames')) || ['パターン1', 'パターン2', 'パターン3'];
+
+        function defaultConfig() {
+            return { shape: 'circle', handDesign: 'standard', indexType: 'roman', schedule: Array(24).fill(0), colorFrame: '#d4af37', colorText: '#ffffff', colorHand: '#ffffff' };
+        }
+        function defaultMap() { return { layer0: { s: 1.0, x: 0, y: 0 } }; }
+
+        function cfgKey(n) { return 'clock_v33_cfg_p' + (n || currentPattern); }
+        function mapKey(n) { return 'clock_v33_map_p' + (n || currentPattern); }
+
+        let config = JSON.parse(localStorage.getItem(cfgKey())) || defaultConfig();
+        let mediaMap = JSON.parse(localStorage.getItem(mapKey())) || defaultMap();
+
+        let isPlayingVid = false;
+        let isPreviewMode = false;
+        let currentTarget = 'layer0';
+        let crystalHandImg = null;
+        let handImages = {};
+
+        // IndexedDB
+        const dbReq = indexedDB.open("KarakuriDB_v33", 1);
+        dbReq.onupgradeneeded = e => e.target.result.createObjectStore("media", { keyPath: "id" });
+        dbReq.onsuccess = e => { db = e.target.result; loadBackground(); updateVideoFileList(); };
+
+        function loadHandImages() {
+            crystalHandImg = new Image();
+            crystalHandImg.src = 'crystal（針デザイン）.png';
+            handImages.spade_hour   = new Image(); handImages.spade_hour.src   = 'spade（時針デザイン）.png';
+            handImages.spade_minute = new Image(); handImages.spade_minute.src = 'spade（分針デザイン）.png';
+            handImages.crystal_hour   = new Image(); handImages.crystal_hour.src   = 'crystal（時針デザイン）.png';
+            handImages.crystal_minute = new Image(); handImages.crystal_minute.src = 'crystal（分針デザイン）.png';
+        }
+
+        function init() {
+            window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+            window.dispatchEvent(new Event('resize'));
+            loadHandImages();
+            fillUI(); renderSchedule(); updatePatternButtons();
+            requestAnimationFrame(drawLoop);
+            setInterval(checkSchedule, 1000);
+        }
+
+        function initAudio() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+        }
+
+        /* --- プレビューロジック（保護） --- */
+        function togglePreview() {
+            if (!currentTarget.startsWith('vid')) return;
+            if (!isPreviewMode) {
+                sourceVid.muted = true;
+                sourceVid.currentTime = 0.5;
+                setTimeout(() => {
+                    captureCanvas.width = sourceVid.videoWidth || 640;
+                    captureCanvas.height = sourceVid.videoHeight || 360;
+                    captureCtx.drawImage(sourceVid, 0, 0);
+                    previewImage = new Image();
+                    previewImage.src = captureCanvas.toDataURL();
+                    previewImage.onload = () => { isPreviewMode = true; updatePreviewBtn(); };
+                }, 300);
+            } else {
+                isPreviewMode = false; previewImage = null; updatePreviewBtn();
+            }
+        }
+
+        function updatePreviewBtn() {
+            const b = document.getElementById('preview-toggle');
+            if(b) {
+                b.innerText = isPreviewMode ? "👁 プレビュー解除" : "👁 プレビュー表示切替";
+                b.style.background = isPreviewMode ? "#d4af37" : "#444";
+            }
+        }
+
+        function updateVideoFileList() {
+            const listDiv = document.getElementById('vid-list');
+            listDiv.innerHTML = `<b>登録済み動画 (P${currentPattern}):</b><br>`;
+            const suffix = '_p' + currentPattern;
+            const transaction = db.transaction("media", "readonly");
+            const store = transaction.objectStore("media");
+            store.getAll().onsuccess = (e) => {
+                const items = e.target.result.filter(item => item.id.startsWith('vid_') && item.id.endsWith(suffix));
+                if(items.length === 0) { listDiv.innerHTML += "なし"; return; }
+                items.sort((a,b) => parseInt(a.id) - parseInt(b.id));
+                items.forEach(item => {
+                    const slot = item.id.slice(0, -suffix.length);
+                    const num = parseInt(slot.split('_')[1]);
+                    const rare = num >= 7 ? ' ★レア' : '';
+                    const name = item.name || "名称不明";
+                    listDiv.innerHTML += `<div class="vid-item">${num}${rare}: ${name}</div>`;
+                });
+            };
+        }
+
+        /* --- 描画ループ --- */
+        function drawLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2; const cy = canvas.height / 2;
+            const baseR = Math.min(cx, cy) * 0.8;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.beginPath();
+            if (config.shape === 'circle') ctx.arc(0, 0, baseR, 0, Math.PI * 2);
+            else if (config.shape === 'ellipse') ctx.ellipse(0, 0, baseR * 0.77, baseR, 0, 0, Math.PI * 2);
+            else if (config.shape === 'octagon') { for(let i=0;i<8;i++){ const a=(i*45+22.5)*Math.PI/180; ctx.lineTo(baseR*Math.cos(a),baseR*Math.sin(a)); } ctx.closePath(); }
+            else if (config.shape === 'square') ctx.rect(-baseR, -baseR, baseR * 2, baseR * 2);
+            ctx.clip();
+
+            if (sourceImg.complete && sourceImg.naturalWidth > 0) {
+                const m = mediaMap['layer0'] || { s:1, x:0, y:0 };
+                const aspect = sourceImg.naturalWidth / sourceImg.naturalHeight;
+                const h = baseR * 2.6 * m.s; const w = h * aspect;
+                ctx.drawImage(sourceImg, -w/2 + m.x, -h/2 + m.y, w, h);
+            }
+
+            if (isPreviewMode && previewImage && !isPlayingVid) {
+                const mv = mediaMap[currentTarget] || { s:1, x:0, y:0 };
+                ctx.save(); ctx.globalAlpha = 0.5;
+                const aspect = previewImage.width / previewImage.height;
+                const h = baseR * 2.6 * mv.s; const w = h * aspect;
+                ctx.drawImage(previewImage, -w/2 + mv.x, -h/2 + mv.y, w, h);
+                ctx.restore();
+            }
+
+            if (isPlayingVid && sourceVid.readyState >= 2) {
+                const mv = mediaMap[currentTarget] || { s:1, x:0, y:0 };
+                const aspect = sourceVid.videoWidth / sourceVid.videoHeight;
+                const h = baseR * 2.6 * mv.s; const w = h * aspect;
+                ctx.drawImage(sourceVid, -w/2 + mv.x, -h/2 + mv.y, w, h);
+            }
+            ctx.restore();
+
+            drawClockFace(cx, cy, baseR);
+
+            const now = new Date();
+            const s = now.getSeconds();
+            if (s !== lastS && audioCtx && audioCtx.state === 'running') {
+                lastS = s;
+                const t = audioCtx.currentTime;
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.type = 'triangle';
+                o.frequency.setTargetAtTime(600, t, 0.01);
+                o.frequency.exponentialRampToValueAtTime(150, t + 0.04);
+                g.gain.setTargetAtTime(0.0001, t, 0.001);
+                g.gain.exponentialRampToValueAtTime(0.00001, t + 0.001);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(t); o.stop(t + 0.05);
+            }
+            requestAnimationFrame(drawLoop);
+        }
+
+        function drawClockFace(cx, cy, baseR) {
+            ctx.save(); ctx.translate(cx, cy);
+            // 輪郭を独自パスで再描画（clipパスの再利用をしない）
+            ctx.beginPath();
+            if (config.shape === 'circle') ctx.arc(0, 0, baseR, 0, Math.PI * 2);
+            else if (config.shape === 'ellipse') ctx.ellipse(0, 0, baseR * 0.77, baseR, 0, 0, Math.PI * 2);
+            else if (config.shape === 'octagon') { ctx.moveTo(baseR*Math.cos(22.5*Math.PI/180), baseR*Math.sin(22.5*Math.PI/180)); for(let i=1;i<8;i++){ const a=(i*45+22.5)*Math.PI/180; ctx.lineTo(baseR*Math.cos(a),baseR*Math.sin(a)); } ctx.closePath(); }
+            else if (config.shape === 'square') ctx.rect(-baseR, -baseR, baseR * 2, baseR * 2);
+            ctx.strokeStyle = config.colorFrame; ctx.lineWidth = baseR * 0.04;
+            ctx.shadowBlur = 10; ctx.shadowColor = config.colorFrame;
+            ctx.stroke();
+            if (config.indexType !== 'none') {
+                ctx.fillStyle = config.colorText; ctx.font = `bold ${baseR * 0.11}px serif`;
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                const roms = ["XII","I","II","III","IV","V","VI","VII","VIII","IX","X","XI"];
+                for(let i=0; i<12; i++){
+                    if(config.indexType === '4main' && ![0,3,6,9].includes(i)) continue;
+                    const a = (i * 30 - 90) * Math.PI / 180;
+                    const rx = (config.shape === 'ellipse') ? baseR * 0.65 : baseR * 0.85;
+                    const ry = baseR * 0.85;
+                    const txt = (config.indexType.includes('roman')||config.indexType==='4main') ? roms[i] : (config.indexType==='dot'?"●":i||12);
+                    ctx.fillText(txt, rx * Math.cos(a), ry * Math.sin(a));
+                }
+            }
+            const n = new Date();
+            drawHand((n.getHours()%12+n.getMinutes()/60)*30-90, baseR*0.5, baseR*0.06, config.colorHand, config.handDesign, 'hour');
+            drawHand(n.getMinutes()*6-90, baseR*0.75, baseR*0.035, config.colorHand, config.handDesign, 'minute');
+            drawHand(n.getSeconds()*6-90, baseR*0.9, 2, "red", "standard", 'second');
+            ctx.restore();
+        }
+
+        // img: Image要素, len: 針の長さ(px), pivXR: ピボットX比率, pivYR: ピボットY比率, tipXR: 先端X比率
+        // 画像は横向き（右が先端）を前提。ctx はすでに rotate 済み。
+        function drawHandImage(img, len, pivXR, pivYR, tipXR) {
+            if (!img || !img.complete || !img.naturalWidth) return false;
+            const iw = img.naturalWidth, ih = img.naturalHeight;
+            const pivX = iw * pivXR, pivY = ih * pivYR;
+            const dist = iw * tipXR - pivX;
+            const scale = len / dist;
+            ctx.save();
+            ctx.scale(scale, scale);
+            ctx.translate(-pivX, -pivY);
+            ctx.drawImage(img, 0, 0);
+            ctx.restore();
+            return true;
+        }
+
+        function drawHand(deg, len, w, col, d, handType) {
+            ctx.save(); ctx.rotate(deg*Math.PI/180); ctx.strokeStyle = ctx.fillStyle = col; ctx.lineWidth = w; ctx.lineCap = "round";
+            ctx.shadowBlur = 8; ctx.shadowColor = col;
+            ctx.beginPath();
+            if(d==='spade'){
+                // ── スペード針：球(ピボット)→細軸→節→スペード頭 ──
+                const isHour = handType === 'hour';
+                const ballR  = w * (isHour ? 1.5 : 1.2);
+                const shaftE = len * (isHour ? 0.42 : 0.50); // 軸終端
+                const jointR = w * 0.65;
+                const maxW   = w * 2.0;                      // スペード最大幅（時針・分針共通）
+                const tipX   = len;
+                const peakX  = shaftE + (tipX - shaftE) * 0.40; // 最大幅の位置
+
+                // 球（ピボット中心）
+                ctx.beginPath(); ctx.arc(0,0,ballR,0,Math.PI*2); ctx.fill();
+                // 細い軸
+                ctx.fillRect(ballR*0.7, -w*0.2, shaftE - ballR*0.7, w*0.4);
+                // 節（joint knot）
+                ctx.beginPath(); ctx.arc(shaftE, 0, jointR, 0, Math.PI*2); ctx.fill();
+                // スペード頭（ベジェ曲線）
+                ctx.beginPath();
+                ctx.moveTo(shaftE, 0);
+                ctx.bezierCurveTo(shaftE+(peakX-shaftE)*0.15, -maxW*0.9,  peakX-(tipX-peakX)*0.1, -maxW,       peakX, -maxW*0.55);
+                ctx.bezierCurveTo(peakX+(tipX-peakX)*0.45,    -maxW*0.18, tipX-(tipX-peakX)*0.07, -maxW*0.04,  tipX,  0);
+                ctx.bezierCurveTo(tipX-(tipX-peakX)*0.07,      maxW*0.04, peakX+(tipX-peakX)*0.45,  maxW*0.18, peakX,  maxW*0.55);
+                ctx.bezierCurveTo(peakX-(tipX-peakX)*0.1,      maxW,      shaftE+(peakX-shaftE)*0.15, maxW*0.9, shaftE, 0);
+                ctx.fill();
+            }
+            else if(d==='leaf'){ ctx.moveTo(0,0); ctx.bezierCurveTo(len*0.3,-w*2,len*0.7,-w*2,len,0); ctx.bezierCurveTo(len*0.7,w*2,len*0.3,w*2,0,0); ctx.fill(); }
+            else if(d==='crystal'){
+                // ── クリスタル針：左錘→軸→4宝石クロス→水晶先端 ──
+                const isHour = handType === 'hour';
+                ctx.shadowBlur = 14; ctx.shadowColor = col;
+                const cwLen  = len * 0.13;                       // 左錘の長さ
+                const crossX = len * (isHour ? 0.47 : 0.49);    // クロス位置
+                const gemR   = w * (isHour ? 3.8 : 3.2);        // 宝石サイズ
+                const shaftW = w * 0.75;
+                const tipBase = len * 0.72;
+
+                // 左錘（逆向き結晶）
+                ctx.beginPath();
+                ctx.moveTo(0,0); ctx.lineTo(-cwLen*0.55,-w*1.2); ctx.lineTo(-cwLen,0); ctx.lineTo(-cwLen*0.55,w*1.2);
+                ctx.closePath(); ctx.fill();
+
+                // 軸
+                ctx.save(); ctx.globalAlpha = 0.85;
+                ctx.fillRect(-cwLen*0.25, -shaftW/2, len+cwLen*0.25, shaftW);
+                ctx.restore();
+
+                // 中央ハブ
+                ctx.beginPath(); ctx.arc(crossX, 0, w*0.9, 0, Math.PI*2); ctx.fill();
+
+                // 4方向ダイヤモンド（45°刻み）
+                [45,-45,135,-135].forEach(deg => {
+                    ctx.save();
+                    ctx.translate(crossX, 0); ctx.rotate(deg*Math.PI/180);
+                    ctx.beginPath();
+                    ctx.moveTo(0,0); ctx.lineTo(gemR*0.28,-gemR*0.13); ctx.lineTo(gemR,0); ctx.lineTo(gemR*0.28,gemR*0.13);
+                    ctx.closePath(); ctx.fill();
+                    ctx.restore();
+                });
+
+                // 先端水晶（多面体）
+                ctx.beginPath();
+                ctx.moveTo(tipBase, -w*1.7);
+                ctx.lineTo(tipBase+(len-tipBase)*0.35, -w*0.85);
+                ctx.lineTo(len, 0);
+                ctx.lineTo(tipBase+(len-tipBase)*0.35, w*0.85);
+                ctx.lineTo(tipBase, w*1.7);
+                ctx.lineTo(tipBase+(len-tipBase)*0.25, 0);
+                ctx.closePath(); ctx.fill();
+                // ファセット（光の反射）
+                ctx.save(); ctx.globalAlpha=0.35; ctx.fillStyle='#fff';
+                ctx.beginPath();
+                ctx.moveTo(tipBase+(len-tipBase)*0.35,-w*0.85); ctx.lineTo(len,0); ctx.lineTo(tipBase+(len-tipBase)*0.25,0);
+                ctx.closePath(); ctx.fill();
+                ctx.restore();
+            }
+            else if(d==='hollow'){
+                ctx.lineWidth=w*0.3; ctx.strokeRect(0,-w/2,len*0.8,w);
+                ctx.beginPath(); ctx.moveTo(len*0.8,-w/2); ctx.lineTo(len,0); ctx.lineTo(len*0.8,w/2); ctx.fill();
+            }
+            else { ctx.moveTo(0,0); ctx.lineTo(len,0); ctx.stroke(); }
+            ctx.restore();
+        }
+
+        function playManual() {
+            if (isPlayingVid) return;
+            initAudio();
+            db.transaction("media").objectStore("media").getAllKeys().onsuccess = e => {
+                const suffix = '_p' + currentPattern;
+                // 現在パターンの動画スロットだけ抽出
+                const slots = e.target.result
+                    .filter(k => k.startsWith('vid_') && k.endsWith(suffix))
+                    .map(k => k.slice(0, -suffix.length));
+                if(!slots.length) return alert("このパターンに動画が登録されていません");
+                // レア動画(vid_7, vid_8)は通常の1/5の確率
+                const weighted = [];
+                slots.forEach(slot => {
+                    const num = parseInt(slot.split('_')[1]);
+                    const weight = (num >= 7) ? 1 : 5;
+                    for(let i = 0; i < weight; i++) weighted.push(slot);
+                });
+                startVid(weighted[Math.floor(Math.random() * weighted.length)]);
+            };
+        }
+
+        // slot = "vid_1" など。DBキーはパターン付き（vid_1_p1 など）
+        function startVid(slot) {
+            const dbKey = slot + '_p' + currentPattern;
+            db.transaction("media").objectStore("media").get(dbKey).onsuccess = e => {
+                if(e.target.result) {
+                    if(!mediaMap[slot]) mediaMap[slot] = { s:1, x:0, y:0 };
+                    currentTarget = slot; isPlayingVid = true; isPreviewMode = false;
+                    document.getElementById('golden-button').classList.add('playing');
+                    sourceVid.src = URL.createObjectURL(e.target.result.data);
+                    sourceVid.muted = false; sourceVid.play();
+                    sourceVid.onended = () => {
+                        isPlayingVid = false; currentTarget = 'layer0';
+                        document.getElementById('golden-button').classList.remove('playing');
+                        sourceVid.src = "";
+                    };
+                }
+            };
+        }
+
+        function uploadVideoDirect(input) {
+            const f = input.files[0];
+            const slot = document.getElementById('mediaTarget').value;
+            if(!slot.startsWith('vid')) return alert("先に動画番号を選択してください");
+            const dbKey = slot + '_p' + currentPattern;
+            db.transaction("media","readwrite").objectStore("media").put({id: dbKey, data: f, name: f.name}).onsuccess = () => {
+                alert(slot + " (P" + currentPattern + ") を保存しました。");
+                updateVideoFileList();
+                loadMedia(dbKey, sourceVid);
+            };
+        }
+
+        function switchMediaTarget() {
+            currentTarget = document.getElementById('mediaTarget').value;
+            if(!mediaMap[currentTarget]) mediaMap[currentTarget] = { s:1, x:0, y:0 };
+            isPreviewMode = false; previewImage = null; updatePreviewBtn();
+            if(currentTarget.startsWith('vid')) loadMedia(currentTarget + '_p' + currentPattern, sourceVid);
+            else loadBackground();
+        }
+
+        function loadBackground() {
+            const key = 'layer0_p' + currentPattern;
+            db.transaction("media").objectStore("media").get(key).onsuccess = e => {
+                if(e.target.result) {
+                    sourceImg.src = e.target.result.data;
+                } else {
+                    sourceImg.src = '';
+                    sourceImg.removeAttribute('src');
+                }
+            };
+        }
+
+        function loadMedia(id, el) {
+            db.transaction("media").objectStore("media").get(id).onsuccess = e => {
+                if(e.target.result) {
+                    if(el.tagName === 'IMG') el.src = e.target.result.data;
+                    else { el.src = URL.createObjectURL(e.target.result.data); el.pause(); }
+                }
+            };
+        }
+
+        function saveCurrentPattern() {
+            localStorage.setItem(cfgKey(), JSON.stringify(config));
+            localStorage.setItem(mapKey(), JSON.stringify(mediaMap));
+        }
+
+        function loadPattern(n) {
+            saveCurrentPattern();
+            currentPattern = n;
+            localStorage.setItem('clock_v33_pattern', n);
+            config = JSON.parse(localStorage.getItem(cfgKey())) || defaultConfig();
+            mediaMap = JSON.parse(localStorage.getItem(mapKey())) || defaultMap();
+            loadBackground();
+            if(db) updateVideoFileList();
+            fillUI(); renderSchedule(); updatePatternButtons();
+        }
+
+        function savePatternName(n, val) {
+            patternNames[n - 1] = val || 'パターン' + n;
+            localStorage.setItem('clock_v33_pnames', JSON.stringify(patternNames));
+            updatePatternButtons();
+        }
+
+        function updatePatternButtons() {
+            for(let i = 1; i <= 3; i++) {
+                const btn = document.getElementById('ptn-' + i);
+                if(btn) {
+                    btn.innerText = patternNames[i - 1];
+                    btn.style.background = (i === currentPattern) ? '#d4af37' : '#333';
+                    btn.style.color = (i === currentPattern) ? '#000' : '#fff';
+                }
+                const inp = document.getElementById('pname-' + i);
+                if(inp) inp.value = patternNames[i - 1];
+            }
+        }
+
+        function updateBaseConfig() {
+            ['shape','handDesign','indexType','colorFrame','colorText','colorHand'].forEach(id => {
+                const el = document.getElementById(id); if(el) config[id] = el.value;
+            });
+            saveCurrentPattern();
+        }
+
+        function fillUI() {
+            const opts = { shape:['circle','ellipse','octagon','square'], handDesign:['standard','spade','leaf','crystal','hollow'], indexType:['roman','arabic','dot','4main','none'] };
+            Object.keys(opts).forEach(id => {
+                const el = document.getElementById(id); if(!el) return;
+                el.innerHTML = "";
+                opts[id].forEach(v => { const o = document.createElement('option'); o.value = v; o.innerText = v; if(config[id]===v) o.selected=true; el.appendChild(o); });
+            });
+            ['colorFrame','colorText','colorHand'].forEach(id => {
+                const el = document.getElementById(id); if(el) el.value = config[id];
+            });
+        }
+
+        function stepAdj(prop, val) {
+            mediaMap[currentTarget][prop] = parseFloat((mediaMap[currentTarget][prop] + val).toFixed(3));
+            saveCurrentPattern();
+        }
+
+        function uploadImage(i) {
+            const f = i.files[0]; const r = new FileReader();
+            r.onload = e => {
+                const key = 'layer0_p' + currentPattern;
+                db.transaction("media","readwrite").objectStore("media").put({id: key, data: e.target.result});
+                sourceImg.src = e.target.result;
+            };
+            r.readAsDataURL(f);
+        }
+
+        function togglePanel() { 
+            document.getElementById('panel').classList.toggle('hidden'); 
+            if(document.getElementById('panel').classList.contains('hidden')) { isPreviewMode = false; } else initAudio();
+        }
+
+        function showTab(id) { 
+            document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden')); 
+            document.getElementById('tab-'+id).classList.remove('hidden'); 
+        }
+
+        function renderSchedule() {
+            const g = document.getElementById('schedGrid'); if(!g) return;
+            g.innerHTML = "";
+            for(let h=6; h<=23; h++){
+                const d = document.createElement('div');
+                d.className = "sched-item";
+                d.innerHTML = `<span>${h}時</span><input type="number" min="0" max="8" value="${config.schedule[h]}" style="width:60px" onchange="config.schedule[${h}]=parseInt(this.value);saveCurrentPattern()">`;
+                g.appendChild(d);
+            }
+        }
+
+        function checkSchedule() {
+            const n = new Date(); const h = n.getHours();
+            if(h >= 6 && h <= 23 && n.getMinutes()===0 && n.getSeconds()===0 && !isPlayingVid) {
+                const vidId = config.schedule[h];
+                if(vidId > 0) startVid("vid_" + vidId);
+            }
+        }
+
+        // ① 新機能：データ一括消去
+        function resetAllData() {
+            if(confirm("登録した画像、動画、全パターンの設定をすべて消去して初期状態に戻しますか？")) {
+                localStorage.clear();
+                const req = indexedDB.deleteDatabase("KarakuriDB_v33");
+                req.onsuccess = () => {
+                    alert("すべてのデータを消去しました。再読み込みします。");
+                    location.reload();
+                };
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

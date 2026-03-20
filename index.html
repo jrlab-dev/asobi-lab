@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>あそびラボ | ASOBI LAB</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;700&display=swap');
+
+        :root {
+            --cyan: #00f5ff;
+            --magenta: #ff00cc;
+            --green: #39ff14;
+            --yellow: #ffe600;
+            --dark: #030612;
+            --dark2: #080f20;
+            --panel: rgba(0, 20, 50, 0.7);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--dark);
+            color: #fff;
+            font-family: 'Noto Sans JP', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- 背景グリッド --- */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 245, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 245, 255, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* --- ヘッダー --- */
+        header {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+
+        .logo-sub {
+            font-family: 'Orbitron', monospace;
+            font-size: 11px;
+            letter-spacing: 6px;
+            color: var(--cyan);
+            opacity: 0.8;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .logo-main {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: clamp(40px, 8vw, 80px);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            background: linear-gradient(90deg, var(--cyan), #fff, var(--magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(0, 245, 255, 0.5));
+            line-height: 1;
+        }
+
+        .logo-en {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(12px, 2vw, 18px);
+            letter-spacing: 8px;
+            color: var(--cyan);
+            opacity: 0.5;
+            margin-top: 8px;
+        }
+
+        .header-line {
+            width: 200px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            margin: 24px auto 0;
+        }
+
+        .tagline {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 16px;
+            letter-spacing: 2px;
+        }
+
+        /* --- メインコンテンツ --- */
+        main {
+            position: relative;
+            z-index: 10;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 20px 80px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: var(--cyan);
+            opacity: 0.6;
+            text-align: center;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        /* --- ゲームカード --- */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            position: relative;
+            background: var(--panel);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.2s, border-color 0.2s;
+            backdrop-filter: blur(10px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan), var(--magenta));
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--cyan);
+        }
+
+        .card:hover::before { opacity: 1; }
+
+        /* コーナー装飾 */
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 20px; height: 20px;
+            border-right: 1px solid rgba(0, 245, 255, 0.4);
+            border-bottom: 1px solid rgba(0, 245, 255, 0.4);
+        }
+
+        .card-thumb {
+            width: 100%;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-thumb-bigfive {
+            background: linear-gradient(135deg, #0a1628 0%, #0d1f3c 50%, #051020 100%);
+        }
+
+        .card-thumb-clock {
+            background: linear-gradient(135deg, #1a0a1e 0%, #2a0d35 50%, #0d0510 100%);
+        }
+
+        /* サムネ装飾 */
+        .thumb-hex {
+            position: absolute;
+            width: 120px; height: 140px;
+            background: rgba(0, 245, 255, 0.03);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            border: 1px solid rgba(0, 245, 255, 0.1);
+        }
+
+        .thumb-icon {
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 0 16px rgba(0, 245, 255, 0.6));
+        }
+
+        .card-thumb-clock .thumb-icon {
+            filter: drop-shadow(0 0 16px rgba(255, 0, 204, 0.6));
+        }
+
+        .card-body {
+            padding: 20px 24px 24px;
+        }
+
+        .card-tag {
+            font-family: 'Orbitron', monospace;
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: var(--cyan);
+            opacity: 0.6;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .card-thumb-clock ~ .card-body .card-tag {
+            color: var(--magenta);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .card-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Orbitron', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--cyan);
+            border: 1px solid rgba(0, 245, 255, 0.4);
+            padding: 8px 16px;
+            border-radius: 2px;
+            text-transform: uppercase;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .card:hover .card-btn {
+            background: rgba(0, 245, 255, 0.1);
+        }
+
+        .card-clock .card-btn {
+            color: var(--magenta);
+            border-color: rgba(255, 0, 204, 0.4);
+        }
+
+        .card-clock:hover .card-btn {
+            background: rgba(255, 0, 204, 0.1);
+        }
+
+        /* --- フッター --- */
+        footer {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid rgba(0, 245, 255, 0.08);
+        }
+
+        .footer-line {
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.2);
+            text-transform: uppercase;
+        }
+
+        /* --- スキャンラインエフェクト --- */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.03) 2px,
+                rgba(0, 0, 0, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* スピンアニメ（コーナー装飾） */
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 6px var(--green);
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 600px) {
+            header { padding: 40px 16px 30px; }
+            .cards { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <p class="logo-sub">// ASOBI LAB v1.0</p>
+        <h1 class="logo-main">あそびラボ</h1>
+        <p class="logo-en">ASOBI LAB</p>
+        <div class="header-line"></div>
+        <p class="tagline"><span class="dot"></span>無料で遊べるブラウザゲーム・インタラクティブコンテンツ</p>
+    </header>
+
+    <main>
+        <p class="section-title">// CONTENTS //</p>
+
+        <div class="cards">
+
+            <!-- ビッグファイブカードゲーム -->
+            <a class="card" href="game/game_demo.html">
+                <div class="card-thumb card-thumb-bigfive">
+                    <div class="thumb-hex"></div>
+                    <span class="thumb-icon">🃏</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-tag">Card Game</p>
+                    <h2 class="card-title">ビッグファイブ<br>カードゲーム</h2>
+                    <p class="card-desc">心理学の「ビッグファイブ理論」をベースにした3人対戦カードゲーム。ATKカードで相手を攻撃し、DEFカードで自分を強化して、最高の自分＝ロールモデルを目指せ！</p>
+                    <span class="card-btn">▶ PLAY NOW</span>
+                </div>
+            </a>
+
+            <!-- 幻想からくり時計 -->
+            <a class="card card-clock" href="clock/index.html">
+                <div class="card-thumb card-thumb-clock">
+                    <div class="thumb-hex"></div>
+                    <span class="thumb-icon">⏰</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-tag">Interactive Clock</p>
+                    <h2 class="card-title">幻想<br>からくり時計</h2>
+                    <p class="card-desc">幻想的なアニメーションで時間を表示するインタラクティブな時計。音楽に合わせて動く美しいビジュアルをお楽しみください。</p>
+                    <span class="card-btn">▶ OPEN</span>
+                </div>
+            </a>
+
+        </div>
+    </main>
+
+    <footer>
+        <p class="footer-line">ASOBI LAB &mdash; Free Browser Contents</p>
+    </footer>
+
+</body>
+</html>

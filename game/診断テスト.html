@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ビッグファイブ診断テスト</title>
+<style>
+/* ================================================================
+   BASE
+================================================================ */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Meiryo', 'Yu Gothic', sans-serif;
+  background: radial-gradient(ellipse at 50% 0%, #1a2a6c 0%, #000428 60%, #000 100%);
+  min-height: 100vh;
+  color: white;
+}
+
+/* ================================================================
+   HEADER
+================================================================ */
+.header {
+  text-align: center;
+  padding: 32px 16px 20px;
+}
+.header-title-big {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 4px;
+  background: linear-gradient(180deg, #fff 0%, #FFE566 40%, #FFD700 70%, #C8A000 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 12px rgba(255,215,0,0.6));
+  line-height: 1;
+}
+.header-title-sub {
+  font-size: 0.85rem;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 6px;
+}
+.header-desc {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 8px;
+}
+
+/* ================================================================
+   MODE SELECTOR
+================================================================ */
+.mode-wrap {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 auto 24px;
+  max-width: 480px;
+  padding: 0 16px;
+}
+.mode-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.6);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.mode-btn:hover { background: rgba(255,255,255,0.12); }
+.mode-btn.active {
+  background: linear-gradient(135deg, #283593, #1A237E);
+  border-color: #FFD700;
+  color: #FFD700;
+  box-shadow: 0 0 16px rgba(255,215,0,0.3);
+}
+
+/* ================================================================
+   PROGRESS
+================================================================ */
+.progress-wrap {
+  max-width: 480px;
+  margin: 0 auto 20px;
+  padding: 0 20px;
+}
+.progress-label {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+.progress-bar-bg {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFD700, #FF8F00);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 8px rgba(255,215,0,0.5);
+}
+
+/* ================================================================
+   QUESTION CARD
+================================================================ */
+.q-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+.q-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 24px 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+}
+.q-trait-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+.badge-O { background: rgba(76,175,80,0.3);  border: 1px solid #4CAF50; color: #A5D6A7; }
+.badge-C { background: rgba(255,87,34,0.3);  border: 1px solid #FF5722; color: #FFCCBC; }
+.badge-E { background: rgba(255,193,7,0.3);  border: 1px solid #FFC107; color: #FFF59D; }
+.badge-A { background: rgba(233,30,99,0.3);  border: 1px solid #E91E63; color: #F48FB1; }
+.badge-N { background: rgba(0,188,212,0.3);  border: 1px solid #00BCD4; color: #80DEEA; }
+
+.q-num {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 10px;
+}
+.q-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.6;
+  color: white;
+  min-height: 3.2rem;
+}
+.q-reverse-note {
+  font-size: 0.65rem;
+  color: rgba(255,200,100,0.7);
+  margin-top: 4px;
+}
+
+/* 大人用スケール（1-5） */
+.scale-adult {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+.scale-btn {
+  flex: 1;
+  padding: 10px 4px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.scale-btn .s-label {
+  font-size: 0.55rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.2;
+  text-align: center;
+}
+.scale-btn:hover { background: rgba(255,215,0,0.12); border-color: rgba(255,215,0,0.4); }
+.scale-btn.selected {
+  background: linear-gradient(135deg, #F57F17, #E65100);
+  border-color: #FFD700;
+  color: white;
+  box-shadow: 0 0 12px rgba(255,150,0,0.4);
+}
+.scale-btn.selected .s-label { color: rgba(255,255,255,0.8); }
+
+/* 子ども用スケール（1-3 顔） */
+.scale-kids {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: center;
+}
+.face-btn {
+  width: 80px;
+  padding: 12px 8px;
+  border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.05);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+}
+.face-btn .face-emoji { font-size: 1.8rem; line-height: 1; }
+.face-btn .face-label { font-size: 0.65rem; color: rgba(255,255,255,0.5); text-align: center; }
+.face-btn:hover { background: rgba(255,255,255,0.1); }
+.face-btn.selected { border-color: #FFD700; box-shadow: 0 0 12px rgba(255,215,0,0.4); }
+.face-btn[data-val="3"].selected { background: rgba(76,175,80,0.3); }
+.face-btn[data-val="2"].selected { background: rgba(255,193,7,0.2); }
+.face-btn[data-val="1"].selected { background: rgba(244,67,54,0.2); }
+
+/* ナビゲーション */
+.nav-wrap {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: space-between;
+}
+.nav-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.12); }
+.nav-btn.primary {
+  background: linear-gradient(135deg, #1565C0, #0D47A1);
+  border-color: #42A5F5;
+  color: white;
+  flex: 1;
+  box-shadow: 0 0 12px rgba(66,165,245,0.3);
+}
+.nav-btn.primary:hover { background: linear-gradient(135deg, #1976D2, #1565C0); }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ================================================================
+   RESULT
+================================================================ */
+.result-wrap {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 0 16px 60px;
+}
+.result-title {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #FFD700;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 12px rgba(255,215,0,0.5);
+}
+
+/* OCEANスコアバー */
+.ocean-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.ocean-card-title {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+.ocean-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.ocean-letter {
+  width: 24px;
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-align: center;
+  flex-shrink: 0;
+}
+.ocean-letter.L-O { color: #A5D6A7; }
+.ocean-letter.L-C { color: #FFCCBC; }
+.ocean-letter.L-E { color: #FFF59D; }
+.ocean-letter.L-A { color: #F48FB1; }
+.ocean-letter.L-N { color: #80DEEA; }
+
+.ocean-bar-wrap {
+  flex: 1;
+  height: 12px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.ocean-bar {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.8s cubic-bezier(0.25,0.46,0.45,0.94);
+  width: 0%;
+}
+.bar-O { background: linear-gradient(90deg, #66BB6A, #2E7D32); box-shadow: 0 0 6px rgba(102,187,106,0.5); }
+.bar-C { background: linear-gradient(90deg, #FF8A65, #BF360C); box-shadow: 0 0 6px rgba(255,138,101,0.5); }
+.bar-E { background: linear-gradient(90deg, #FFD54F, #E65100); box-shadow: 0 0 6px rgba(255,213,79,0.5); }
+.bar-A { background: linear-gradient(90deg, #F48FB1, #880E4F); box-shadow: 0 0 6px rgba(244,143,177,0.5); }
+.bar-N { background: linear-gradient(90deg, #80DEEA, #006064); box-shadow: 0 0 6px rgba(128,222,234,0.5); }
+
+.ocean-score {
+  width: 36px;
+  text-align: right;
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: white;
+  flex-shrink: 0;
+}
+.ocean-name {
+  width: 80px;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.4);
+  flex-shrink: 0;
+}
+
+/* 特性説明 */
+.trait-desc {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.6;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+/* マッチングカード */
+.match-section-title {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+}
+.match-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.match-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.match-rank {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.rank-1 { background: linear-gradient(135deg,#FFD700,#FF8F00); color: #000; }
+.rank-2 { background: linear-gradient(135deg,#CFD8DC,#90A4AE); color: #000; }
+.rank-3 { background: linear-gradient(135deg,#FFCC80,#FF7043); color: #000; }
+.match-info { flex: 1; }
+.match-name { font-size: 0.95rem; font-weight: 900; color: white; }
+.match-cat {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 2px;
+}
+.match-flavor {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+  font-style: italic;
+  line-height: 1.4;
+}
+.match-score {
+  font-size: 0.7rem;
+  color: rgba(255,200,100,0.7);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* 再挑戦ボタン */
+.retry-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 8px;
+  transition: all 0.15s;
+}
+.retry-btn:hover { background: rgba(255,255,255,0.12); }
+
+/* 免責 */
+.disclaimer {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+  margin-top: 20px;
+  line-height: 1.8;
+}
+
+/* ================================================================
+   SECTIONS
+================================================================ */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ================================================================
+   TRANSITION ANIMATION
+================================================================ */
+@keyframes fadeIn {
+  from { opacity:0; transform: translateY(12px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.q-card { animation: fadeIn 0.25s ease; }
+.result-wrap { animation: fadeIn 0.4s ease; }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-title-big">BIG5</div>
+  <div class="header-title-sub">パーソナリティ診断</div>
+  <div class="header-desc">ビッグファイブカードゲーム 公式テスト</div>
+</div>
+
+<!-- モード選択 -->
+<div class="mode-wrap" id="modeWrap">
+  <button class="mode-btn active" id="btnAdult" onclick="setMode('adult')">🧑 大人向け（20問）</button>
+  <button class="mode-btn" id="btnKids"  onclick="setMode('kids')">🧒 子ども向け（15問）</button>
+</div>
+
+<!-- SECTION: 質問 -->
+<div class="section active" id="secQuestion">
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progressText">1 / 20</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="q-wrap">
+    <div class="q-card" id="qCard">
+      <div id="qTraitBadge" class="q-trait-badge badge-O"></div>
+      <div class="q-num" id="qNum"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="q-reverse-note" id="qReverse" style="display:none">※ 採点時に逆転する項目です</div>
+
+      <!-- 大人スケール -->
+      <div class="scale-adult" id="scaleAdult">
+        <button class="scale-btn" data-val="1" onclick="selectAnswer(1)">
+          <span>1</span><span class="s-label">全く<br>そう思わない</span>
+        </button>
+        <button class="scale-btn" data-val="2" onclick="selectAnswer(2)">
+          <span>2</span><span class="s-label">そう<br>思わない</span>
+        </button>
+        <button class="scale-btn" data-val="3" onclick="selectAnswer(3)">
+          <span>3</span><span class="s-label">どちらとも<br>いえない</span>
+        </button>
+        <button class="scale-btn" data-val="4" onclick="selectAnswer(4)">
+          <span>4</span><span class="s-label">そう<br>思う</span>
+        </button>
+        <button class="scale-btn" data-val="5" onclick="selectAnswer(5)">
+          <span>5</span><span class="s-label">非常に<br>そう思う</span>
+        </button>
+      </div>
+
+      <!-- 子どもスケール -->
+      <div class="scale-kids" id="scaleKids" style="display:none">
+        <button class="face-btn" data-val="1" onclick="selectAnswer(1)">
+          <span class="face-emoji">😟</span>
+          <span class="face-label">ちがう</span>
+        </button>
+        <button class="face-btn" data-val="2" onclick="selectAnswer(2)">
+          <span class="face-emoji">😐</span>
+          <span class="face-label">どちらでも<br>ない</span>
+        </button>
+        <button class="face-btn" data-val="3" onclick="selectAnswer(3)">
+          <span class="face-emoji">😊</span>
+          <span class="face-label">そう思う</span>
+        </button>
+      </div>
+
+      <div class="nav-wrap">
+        <button class="nav-btn" id="btnPrev" onclick="prevQ()">← 戻る</button>
+        <button class="nav-btn primary" id="btnNext" onclick="nextQ()" disabled>次へ →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION: 結果 -->
+<div class="section" id="secResult">
+  <div class="result-wrap">
+    <div class="result-title">✦ 診断結果 ✦</div>
+
+    <!-- OCEANスコア -->
+    <div class="ocean-card">
+      <div class="ocean-card-title">▶ あなたのビッグファイブスコア</div>
+      <div class="ocean-row">
+        <div class="ocean-letter L-O">O</div>
+        <div class="ocean-name">開放性</div>
+        <div class="ocean-bar-wrap"><div class="ocean-bar bar-O" id="barO"></div></div>
+        <div class="ocean-score" id="scoreO">-</div>
+      </div>
+      <div class="ocean-row">
+        <div class="ocean-letter L-C">C</div>
+        <div class="ocean-name">誠実性</div>
+        <div class="ocean-bar-wrap"><div class="ocean-bar bar-C" id="barC"></div></div>
+        <div class="ocean-score" id="scoreC">-</div>
+      </div>
+      <div class="ocean-row">
+        <div class="ocean-letter L-E">E</div>
+        <div class="ocean-name">外向性</div>
+        <div class="ocean-bar-wrap"><div class="ocean-bar bar-E" id="barE"></div></div>
+        <div class="ocean-score" id="scoreE">-</div>
+      </div>
+      <div class="ocean-row">
+        <div class="ocean-letter L-A">A</div>
+        <div class="ocean-name">協調性</div>
+        <div class="ocean-bar-wrap"><div class="ocean-bar bar-A" id="barA"></div></div>
+        <div class="ocean-score" id="scoreA">-</div>
+      </div>
+      <div class="ocean-row">
+        <div class="ocean-letter L-N">N</div>
+        <div class="ocean-name">神経症傾向</div>
+        <div class="ocean-bar-wrap"><div class="ocean-bar bar-N" id="barN"></div></div>
+        <div class="ocean-score" id="scoreN">-</div>
+      </div>
+      <div class="trait-desc" id="traitDesc"></div>
+    </div>
+
+    <!-- マッチングカード -->
+    <div class="ocean-card">
+      <div class="match-section-title">▶ あなたに向いているフィールドカード</div>
+      <div class="match-cards" id="matchCards"></div>
+    </div>
+
+    <button class="retry-btn" onclick="retryTest()">🔄 もう一度やり直す</button>
+    <div class="disclaimer">
+      このテストはビッグファイブカードゲーム用に設計されたものです。<br>
+      どの特性が「良い・悪い」ということはありません。<br>
+      臨床的な診断には使用しないでください。
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  DATA
+// ============================================================
+
+// 大人向け20問
+const ADULT_QS = [
+  { trait:'O', text:'新しいアイデアや考え方に興味がある', rev:false },
+  { trait:'O', text:'芸術・音楽・文学など創造的なものに引かれる', rev:false },
+  { trait:'O', text:'複雑な問題を深く考えることが好きだ', rev:false },
+  { trait:'O', text:'平凡で型にはまったやり方の方が安心できる', rev:true },
+  { trait:'C', text:'計画を立て、それに沿って物事を進める方だ', rev:false },
+  { trait:'C', text:'責任感があり、任されたことはやり遂げる', rev:false },
+  { trait:'C', text:'身の回りの整理整頓をきちんとするほうだ', rev:false },
+  { trait:'C', text:'締め切りや約束を守ることが苦手だ', rev:true },
+  { trait:'E', text:'人と話したり、交流したりするのが好きだ', rev:false },
+  { trait:'E', text:'初対面の人にも自分から話しかけられる', rev:false },
+  { trait:'E', text:'グループの中でリーダー的な役割をとりやすい', rev:false },
+  { trait:'E', text:'大勢でいるより、一人でいる方が気楽だ', rev:true },
+  { trait:'A', text:'他人の気持ちに共感しやすい方だ', rev:false },
+  { trait:'A', text:'困っている人がいたら、進んで助けようとする', rev:false },
+  { trait:'A', text:'意見が対立しても、穏やかに話し合える', rev:false },
+  { trait:'A', text:'自分の意見を通すために、強引になることがある', rev:true },
+  { trait:'N', text:'些細なことでも不安になりやすい', rev:false },
+  { trait:'N', text:'ストレスがかかるとパニックになりやすい', rev:false },
+  { trait:'N', text:'気分の波が激しい方だ', rev:false },
+  { trait:'N', text:'プレッシャーがかかってもどっしりと構えていられる', rev:true },
+];
+
+// 子ども向け15問
+const KIDS_QS = [
+  { trait:'O', text:'知らないことを調べたり学んだりするのが好き', rev:false },
+  { trait:'O', text:'自分で考えた遊びやアイデアを友達に話したくなる', rev:false },
+  { trait:'O', text:'新しいことより、いつも同じことの方が安心する', rev:true },
+  { trait:'C', text:'宿題や約束したことは、きちんとやり遂げる', rev:false },
+  { trait:'C', text:'部屋や持ち物を整理するのが得意だ', rev:false },
+  { trait:'C', text:'やりたいことがあると、他のことをつい忘れてしまう', rev:true },
+  { trait:'E', text:'友達と話したり一緒に遊んだりするのが好き', rev:false },
+  { trait:'E', text:'知らない人にも、自分から話しかけることができる', rev:false },
+  { trait:'E', text:'大人数よりも、一人か少人数でいる方が落ち着く', rev:true },
+  { trait:'A', text:'友達が悲しんでいると、自分もつらい気持ちになる', rev:false },
+  { trait:'A', text:'困っている人がいたら、助けたいと思う', rev:false },
+  { trait:'A', text:'自分の意見が通らないと、カッとなることがある', rev:true },
+  { trait:'N', text:'失敗したり怒られたりすると、長い間気にしてしまう', rev:false },
+  { trait:'N', text:'ちょっとしたことでも不安になったり心配になったりする', rev:false },
+  { trait:'N', text:'嫌なことがあっても、すぐに気持ちを切り替えられる', rev:true },
+];
+
+// フィールドカードデータ（マッチング用）
+const FIELD_CARDS = [
+  { name:'研究者・博士',       sv:[5,5,2,3,3], cat:'ライト',   flavor:'知識と探求心がカギ。コツコツ積み上げる力が武器。' },
+  { name:'カウンセラー',       sv:[3,3,3,5,3], cat:'ライト',   flavor:'共感力と感情の安定が信頼を生む。' },
+  { name:'農家・職人',         sv:[3,5,2,3,4], cat:'ライト',   flavor:'継続する力と感情の安定が品質を生む。' },
+  { name:'芸術家',             sv:[5,2,3,3,4], cat:'ライト',   flavor:'型にはまらない発想が作品を生む。' },
+  { name:'看護師・介護士',     sv:[3,4,3,5,3], cat:'ライト',   flavor:'思いやりと責任感が命を支える。' },
+  { name:'起業家・経営者',     sv:[5,4,5,2,3], cat:'ミドル',   flavor:'孤独を恐れない強さが必要。' },
+  { name:'営業職',             sv:[3,3,5,4,4], cat:'ミドル',   flavor:'断られてもめげない心が勝負。' },
+  { name:'俳優・芸人',         sv:[5,2,5,3,4], cat:'ミドル',   flavor:'感情の振れ幅が最大の武器。' },
+  { name:'インフルエンサー',   sv:[4,3,5,3,4], cat:'ミドル',   flavor:'自分を商品にする覚悟が必要。' },
+  { name:'プロスポーツ',       sv:[3,5,3,3,5], cat:'ミドル',   flavor:'才能より継続。ストイックな自己管理が結果を決める。' },
+  { name:'政治家・官僚',       sv:[3,3,5,2,4], cat:'グレー⚠', flavor:'勝てるが幸せとは限らない。' },
+  { name:'弁護士・検察官',     sv:[3,5,4,2,3], cat:'グレー⚠', flavor:'正義を貫くには孤立を恐れない心が必要。' },
+  { name:'外科医・救急医',     sv:[3,5,3,2,5], cat:'グレー⚠', flavor:'感情を抑制する力が命を救う。' },
+  { name:'証券トレーダー',     sv:[3,5,3,2,5], cat:'グレー⚠', flavor:'勝ち続けるために人間味を削る。' },
+  { name:'ネットワークビジネス',sv:[3,3,5,2,4],cat:'グレー⚠', flavor:'「勝てる＝幸せ」ではない。' },
+];
+
+const TRAIT_LABELS = {
+  O: '開放性',
+  C: '誠実性',
+  E: '外向性',
+  A: '協調性',
+  N: '神経症傾向',
+};
+
+// ============================================================
+//  STATE
+// ============================================================
+let mode = 'adult';
+let questions = ADULT_QS;
+let answers = {};
+let current = 0;
+
+// ============================================================
+//  MODE
+// ============================================================
+function setMode(m) {
+  mode = m;
+  questions = (m === 'adult') ? ADULT_QS : KIDS_QS;
+  answers = {};
+  current = 0;
+  document.getElementById('btnAdult').classList.toggle('active', m === 'adult');
+  document.getElementById('btnKids').classList.toggle('active', m === 'kids');
+  document.getElementById('scaleAdult').style.display = (m === 'adult') ? 'flex' : 'none';
+  document.getElementById('scaleKids').style.display  = (m === 'kids')  ? 'flex' : 'none';
+  showSection('secQuestion');
+  renderQ();
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+function renderQ() {
+  const q = questions[current];
+  const total = questions.length;
+
+  // progress
+  document.getElementById('progressText').textContent = `${current+1} / ${total}`;
+  const pct = Math.round((current / total) * 100);
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // badge
+  const badge = document.getElementById('qTraitBadge');
+  badge.textContent = `${q.trait}：${TRAIT_LABELS[q.trait]}`;
+  badge.className = `q-trait-badge badge-${q.trait}`;
+
+  // question
+  document.getElementById('qNum').textContent = `Q${current+1}`;
+  document.getElementById('qText').textContent = q.text;
+  const revNote = document.getElementById('qReverse');
+  revNote.style.display = q.rev ? 'block' : 'none';
+
+  // reset buttons
+  if (mode === 'adult') {
+    document.querySelectorAll('.scale-btn').forEach(b => {
+      b.classList.toggle('selected', parseInt(b.dataset.val) === answers[current]);
+    });
+  } else {
+    document.querySelectorAll('.face-btn').forEach(b => {
+      b.classList.toggle('selected', parseInt(b.dataset.val) === answers[current]);
+    });
+  }
+
+  // nav
+  document.getElementById('btnPrev').disabled = (current === 0);
+  document.getElementById('btnNext').disabled = (answers[current] === undefined);
+  const isLast = current === total - 1;
+  document.getElementById('btnNext').textContent = isLast ? '結果を見る ✦' : '次へ →';
+
+  // re-trigger animation
+  const card = document.getElementById('qCard');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = '';
+}
+
+function selectAnswer(val) {
+  answers[current] = val;
+  if (mode === 'adult') {
+    document.querySelectorAll('.scale-btn').forEach(b => {
+      b.classList.toggle('selected', parseInt(b.dataset.val) === val);
+    });
+  } else {
+    document.querySelectorAll('.face-btn').forEach(b => {
+      b.classList.toggle('selected', parseInt(b.dataset.val) === val);
+    });
+  }
+  document.getElementById('btnNext').disabled = false;
+
+  // 自動で少し待ってから次へ
+  setTimeout(() => {
+    if (answers[current] !== undefined) nextQ();
+  }, 350);
+}
+
+function nextQ() {
+  if (answers[current] === undefined) return;
+  if (current < questions.length - 1) {
+    current++;
+    renderQ();
+  } else {
+    showResult();
+  }
+}
+
+function prevQ() {
+  if (current > 0) {
+    current--;
+    renderQ();
+  }
+}
+
+// ============================================================
+//  CALCULATE SCORES
+// ============================================================
+function calcScores() {
+  const traits = ['O','C','E','A','N'];
+  const scores = {};
+
+  traits.forEach(t => {
+    const qs = questions.map((q,i) => ({...q, idx:i})).filter(q => q.trait === t);
+    const maxVal = mode === 'adult' ? 5 : 3;
+    const sum = qs.reduce((acc, q) => {
+      const raw = answers[q.idx] || 0;
+      const val = q.rev ? (maxVal + 1 - raw) : raw;
+      return acc + val;
+    }, 0);
+    scores[t] = Math.round((sum / qs.length) * 10) / 10;
+  });
+
+  return scores;
+}
+
+// ============================================================
+//  SHOW RESULT
+// ============================================================
+function showResult() {
+  const scores = calcScores();
+  const maxScore = mode === 'adult' ? 5 : 3;
+
+  showSection('secResult');
+
+  // スコアバー（少し遅らせてアニメーション）
+  setTimeout(() => {
+    ['O','C','E','A','N'].forEach(t => {
+      const pct = Math.round((scores[t] / maxScore) * 100);
+      document.getElementById('barO'.replace('O', t.replace('O','O'))).style.width = '';
+      document.getElementById(`bar${t}`).style.width = pct + '%';
+      document.getElementById(`score${t}`).textContent = scores[t].toFixed(1);
+    });
+  }, 100);
+
+  // 特性説明
+  const dominant = Object.entries(scores).sort((a,b) => b[1]-a[1]).slice(0,2).map(e=>e[0]);
+  const desc = buildTraitDesc(scores, maxScore);
+  document.getElementById('traitDesc').textContent = desc;
+
+  // マッチングカード
+  const matched = matchCards(scores, maxScore);
+  const matchHtml = matched.map((m, i) => {
+    const catColor = m.cat === 'ライト' ? '#A5D6A7' : m.cat === 'ミドル' ? '#FFD54F' : '#FF8A65';
+    return `<div class="match-card">
+      <div class="match-rank rank-${i+1}">${i+1}</div>
+      <div class="match-info">
+        <div class="match-name">${m.name}</div>
+        <div class="match-cat" style="color:${catColor}">${m.cat}</div>
+        <div class="match-flavor">${m.flavor}</div>
+      </div>
+      <div class="match-score">一致度<br>${m.match}%</div>
+    </div>`;
+  }).join('');
+  document.getElementById('matchCards').innerHTML = matchHtml;
+}
+
+function buildTraitDesc(scores, maxScore) {
+  const parts = [];
+  const mid = (maxScore + 1) / 2;
+  if (scores.O >= mid + 0.5) parts.push('好奇心が強く創造的なタイプ');
+  else if (scores.O < mid - 0.5) parts.push('現実的・安定志向なタイプ');
+  if (scores.C >= mid + 0.5) parts.push('計画的で自己管理が得意');
+  else if (scores.C < mid - 0.5) parts.push('自由で柔軟な行動スタイル');
+  if (scores.E >= mid + 0.5) parts.push('社交的でエネルギッシュ');
+  else if (scores.E < mid - 0.5) parts.push('内向的で思慮深い');
+  if (scores.A >= mid + 0.5) parts.push('思いやりがあり協力的');
+  else if (scores.A < mid - 0.5) parts.push('自己主張が強く独立心がある');
+  if (scores.N >= mid + 0.5) parts.push('繊細で感受性が豊か');
+  else if (scores.N < mid - 0.5) parts.push('精神的に安定していてどっしりしている');
+  return parts.length > 0 ? parts.join('、') + 'です。' : 'バランス型のパーソナリティです。';
+}
+
+function matchCards(scores, maxScore) {
+  // ユーザースコアを1-5スケールに正規化
+  const norm = (v) => mode === 'adult' ? v : v * (5 / 3);
+  const userVec = [
+    norm(scores.O), norm(scores.C), norm(scores.E), norm(scores.A), norm(scores.N)
+  ];
+
+  const ranked = FIELD_CARDS.map(card => {
+    // ユークリッド距離（小さいほど近い）
+    const dist = Math.sqrt(
+      card.sv.reduce((acc, sv, i) => acc + Math.pow(sv - userVec[i], 2), 0)
+    );
+    const maxDist = Math.sqrt(5 * Math.pow(4, 2)); // 最大距離
+    const match = Math.round((1 - dist / maxDist) * 100);
+    return { ...card, dist, match };
+  }).sort((a, b) => a.dist - b.dist);
+
+  return ranked.slice(0, 3);
+}
+
+// ============================================================
+//  UI HELPERS
+// ============================================================
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function retryTest() {
+  answers = {};
+  current = 0;
+  showSection('secQuestion');
+  renderQ();
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  renderQ();
+});
+</script>
+</body>
+</html>
