@@ -1883,20 +1883,10 @@ function diagApplyResult() {
 let gameScale = 1;
 function scaleGame() {
   const DESIGN_W = 1100, DESIGN_H = 860;
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const el = document.getElementById('game');
-  if (vh > vw) {
-    // 縦向き：90度回転してフィット
-    gameScale = Math.min(vw / DESIGN_H, vh / DESIGN_W);
-    el.style.transform = `rotate(90deg) scale(${gameScale})`;
-  } else {
-    // 横向き：通常スケール
-    gameScale = Math.min(vw / DESIGN_W, vh / DESIGN_H);
-    el.style.transform = `scale(${gameScale})`;
-  }
+  gameScale = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H);
+  document.getElementById('game').style.transform = `scale(${gameScale})`;
 }
 window.addEventListener('resize', scaleGame);
-window.addEventListener('orientationchange', () => setTimeout(scaleGame, 200));
 
 // ============================================================
 //  INIT
