@@ -449,7 +449,7 @@ body {
 #win-msg { font-size:30px; font-weight:900; text-shadow:0 0 25px currentColor; text-align:center; }
 #win-detail { font-size:12px; color:rgba(255,255,255,0.65); text-align:center; line-height:2; }
 
-#how { position:fixed; bottom:10px; right:12px; font-size:9px; color:rgba(255,255,255,0.22); line-height:1.7; text-align:right; }
+#how { font-size:9px; color:rgba(255,255,255,0.22); line-height:1.7; text-align:left; }
 
 /* ===== DIAG MODAL ===== */
 #diag-modal {
@@ -786,9 +786,9 @@ body {
   </div>
 
   <div id="btns">
-    <span id="how">ATK→攻撃対象を選択 ／ DEF→自分のステータスUP ／ フィールドと一致で勝利！</span>
     <button id="mute-btn" onclick="toggleMute()">🔊</button>
     <button class="btn" onclick="returnToStart()">タイトルへ</button>
+    <span id="how">ATK→攻撃対象を選択<br>DEF→自分のステータスUP<br>フィールドと一致で勝利！</span>
   </div>
 </div>
 
@@ -820,14 +820,14 @@ const ATK = [
   { name:'批判・否定',       icon:'⚔', no:'A-012', dv:[-5,-5,0,-5,-15],  flavor:'言葉の暴力は最も静かで深い攻撃。',        img:'images/攻撃・防御/批判否定.png' },
   { name:'アルコール依存',   icon:'⚔', no:'A-013', dv:[0,-10,-5,-5,-15], flavor:'一杯が二杯になり、二杯が習慣になる。',        img:'images/攻撃・防御/アルコール依存.png' },
   { name:'過労',             icon:'⚔', no:'A-014', dv:[0,-10,-10,0,-20], flavor:'働きすぎは美徳ではない。',                    img:'images/攻撃・防御/過労.png' },
-  { name:'夜更かし',         icon:'⚔', no:'A-015', dv:[0,-10,-5,0,-10],  flavor:'深夜のスマホは翌日の自分を蝕む。',            img:'images/攻撃・防御/睡眠不足.png' },
-  { name:'スマホ依存',       icon:'⚔', no:'A-016', dv:[0,-10,0,-5,-15],  flavor:'常に通知を確認する習慣が集中力を奪う。',      img:'images/攻撃・防御/SNS.png' },
-  { name:'怠惰・先延ばし',   icon:'⚔', no:'A-017', dv:[0,-15,-5,0,-10],  flavor:'「あとで」は永遠に来ない。',                  img:'images/攻撃・防御/運動不足.png' },
-  { name:'暴言・悪口',       icon:'⚔', no:'A-018', dv:[-5,-5,0,-10,-10], flavor:'吐いた言葉は自分にも返ってくる。',            img:'images/攻撃・防御/批判否定.png' },
-  { name:'引きこもり',       icon:'⚔', no:'A-019', dv:[0,-5,-15,-5,-5],  flavor:'部屋の壁が現実の壁になっていく。',            img:'images/攻撃・防御/ソーシャルゲーム.png' },
-  { name:'衝動買い',         icon:'⚔', no:'A-020', dv:[0,-10,0,-10,-5],  flavor:'一瞬の快楽が長期の計画を崩す。',              img:'images/攻撃・防御/金銭欲求.png' },
-  { name:'過食',             icon:'⚔', no:'A-021', dv:[0,-10,0,0,-20],   flavor:'心の空白を食べ物で埋めようとする。',          img:'images/攻撃・防御/夢のようなスイーツの山.png' },
-  { name:'完璧主義の罠',     icon:'⚔', no:'A-022', dv:[-5,-5,0,0,-15],   flavor:'100点を求めすぎて0点で止まる。',              img:'images/攻撃・防御/批判否定.png' },
+  { name:'夜更かし',         icon:'⚔', no:'A-015', dv:[0,-10,-5,0,-10],  flavor:'深夜のスマホは翌日の自分を蝕む。',            img:'images/攻撃・防御/夜更かしスマホチビ（女性版）.png' },
+  { name:'スマホ依存',       icon:'⚔', no:'A-016', dv:[0,-10,0,-5,-15],  flavor:'常に通知を確認する習慣が集中力を奪う。',      img:'images/攻撃・防御/スマホ依存チビキャラ（通知に囲まれて不安.png' },
+  { name:'怠惰・先延ばし',   icon:'⚔', no:'A-017', dv:[0,-15,-5,0,-10],  flavor:'「あとで」は永遠に来ない。',                  img:'images/攻撃・防御/怠惰先延ばし.png' },
+  { name:'暴言・悪口',       icon:'⚔', no:'A-018', dv:[-5,-5,0,-10,-10], flavor:'吐いた言葉は自分にも返ってくる。',            img:'images/攻撃・防御/暴言悪口.png' },
+  { name:'引きこもり',       icon:'⚔', no:'A-019', dv:[0,-5,-15,-5,-5],  flavor:'部屋の壁が現実の壁になっていく。',            img:'images/攻撃・防御/引きこもり.png' },
+  { name:'衝動買い',         icon:'⚔', no:'A-020', dv:[0,-10,0,-10,-5],  flavor:'一瞬の快楽が長期の計画を崩す。',              img:'images/攻撃・防御/衝動買い.png' },
+  { name:'過食',             icon:'⚔', no:'A-021', dv:[0,-10,0,0,-20],   flavor:'心の空白を食べ物で埋めようとする。',          img:'images/攻撃・防御/過食.png' },
+  { name:'完璧主義の罠',     icon:'⚔', no:'A-022', dv:[-5,-5,0,0,-15],   flavor:'100点を求めすぎて0点で止まる。',              img:'images/攻撃・防御/完璧主義.png' },
 ];
 
 const DEF = [
@@ -843,18 +843,18 @@ const DEF = [
   { name:'感謝を伝える',        icon:'🛡', no:'D-011', sv:[0,0,0,10,10],  flavor:'「ありがとう」は最も安いギフト。',            img:'images/攻撃・防御/感謝.png' },
   { name:'早起き',              icon:'🛡', no:'D-012', sv:[0,10,0,0,5],   flavor:'朝の1時間は夜の3時間に勝る。',              img:'images/攻撃・防御/規則正しい生活.png' },
   { name:'目標設定',            icon:'🛡', no:'D-013', sv:[5,15,0,0,0],   flavor:'なりたい自分を決めることが最初の一歩。',      img:'images/攻撃・防御/目標設定.png' },
-  { name:'ヨガ・ストレッチ',    icon:'🛡', no:'D-014', sv:[0,5,5,5,10],   flavor:'体の柔軟性が、心の柔軟性をつくる。',          img:'images/攻撃・防御/有酸素運動.png' },
-  { name:'栄養バランスの食事',  icon:'🛡', no:'D-015', sv:[0,10,5,0,10],  flavor:'食べたものが、あなたをつくる。',               img:'images/攻撃・防御/規則正しい生活.png' },
-  { name:'友人との交流',        icon:'🛡', no:'D-016', sv:[0,0,10,10,5],  flavor:'笑いと会話は最高のメンタルケア。',             img:'images/攻撃・防御/挨拶.png' },
-  { name:'外国語学習',          icon:'🛡', no:'D-017', sv:[10,10,0,0,5],  flavor:'異なる言語は、異なる世界への扉。',             img:'images/攻撃・防御/読書.png' },
-  { name:'楽器・音楽',          icon:'🛡', no:'D-018', sv:[5,5,0,5,10],   flavor:'音楽は感情を整える最古の薬。',                img:'images/攻撃・防御/瞑想.png' },
-  { name:'自然散歩',            icon:'🛡', no:'D-019', sv:[5,0,5,5,10],   flavor:'緑と空が思考をリセットする。',                img:'images/攻撃・防御/有酸素運動.png' },
-  { name:'整理整頓',            icon:'🛡', no:'D-020', sv:[0,10,0,5,5],   flavor:'片付いた空間が、片付いた思考を生む。',        img:'images/攻撃・防御/目標設定.png' },
+  { name:'ヨガ・ストレッチ',    icon:'🛡', no:'D-014', sv:[0,5,5,5,10],   flavor:'体の柔軟性が、心の柔軟性をつくる。',          img:'images/攻撃・防御/ヨガ.png' },
+  { name:'栄養バランスの食事',  icon:'🛡', no:'D-015', sv:[0,10,5,0,10],  flavor:'食べたものが、あなたをつくる。',               img:'images/攻撃・防御/栄養バランスの良い食事.png' },
+  { name:'友人との交流',        icon:'🛡', no:'D-016', sv:[0,0,10,10,5],  flavor:'笑いと会話は最高のメンタルケア。',             img:'images/攻撃・防御/仲良しチビキャラの笑顔.png' },
+  { name:'外国語学習',          icon:'🛡', no:'D-017', sv:[10,10,0,0,5],  flavor:'異なる言語は、異なる世界への扉。',             img:'images/攻撃・防御/外国語学習.png' },
+  { name:'楽器・音楽',          icon:'🛡', no:'D-018', sv:[5,5,0,5,10],   flavor:'音楽は感情を整える最古の薬。',                img:'images/攻撃・防御/チビキャラの楽器演奏シーン.png' },
+  { name:'自然散歩',            icon:'🛡', no:'D-019', sv:[5,0,5,5,10],   flavor:'緑と空が思考をリセットする。',                img:'images/攻撃・防御/自然散歩.png' },
+  { name:'整理整頓',            icon:'🛡', no:'D-020', sv:[0,10,0,5,5],   flavor:'片付いた空間が、片付いた思考を生む。',        img:'images/攻撃・防御/整理整頓.png' },
   { name:'心拍トレーニング',    icon:'🛡', no:'D-021', sv:[0,5,5,0,15],   flavor:'限界を超える練習がメンタルを鍛える。',        img:'images/攻撃・防御/心拍トレーニング.png' },
-  { name:'資格・勉強',          icon:'🛡', no:'D-022', sv:[15,10,0,0,5],  flavor:'知識は裏切らない唯一の財産。',                img:'images/攻撃・防御/プログラミング.png' },
-  { name:'新しい趣味',          icon:'🛡', no:'D-023', sv:[15,0,5,5,5],   flavor:'未知の体験が脳に新しい道をつくる。',          img:'images/攻撃・防御/マインドフルネス.png' },
-  { name:'睡眠管理',            icon:'🛡', no:'D-024', sv:[0,10,5,0,15],  flavor:'7時間の睡眠は最強のパフォーマンス向上策。',   img:'images/攻撃・防御/規則正しい生活.png' },
-  { name:'感情日記',            icon:'🛡', no:'D-025', sv:[10,5,0,0,10],  flavor:'怒りも悲しみも、書けば整理できる。',          img:'images/攻撃・防御/日記を書く.png' },
+  { name:'資格・勉強',          icon:'🛡', no:'D-022', sv:[15,10,0,0,5],  flavor:'知識は裏切らない唯一の財産。',                img:'images/攻撃・防御/資格試験に集中して勉強するキャラ.png' },
+  { name:'新しい趣味',          icon:'🛡', no:'D-023', sv:[15,0,5,5,5],   flavor:'未知の体験が脳に新しい道をつくる。',          img:'images/攻撃・防御/新しい趣味.png' },
+  { name:'睡眠管理',            icon:'🛡', no:'D-024', sv:[0,10,5,0,15],  flavor:'7時間の睡眠は最強のパフォーマンス向上策。',   img:'images/攻撃・防御/睡眠管理.png' },
+  { name:'感情日記',            icon:'🛡', no:'D-025', sv:[10,5,0,0,10],  flavor:'怒りも悲しみも、書けば整理できる。',          img:'images/攻撃・防御/感情日記.png' },
 ];
 
 // フィールド目標値は 10〜50 スケール（診断テスト1〜5 の×10 対応）
