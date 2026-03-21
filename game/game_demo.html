@@ -199,7 +199,8 @@ body {
   display:flex; flex-direction:column;
   width:1100px; height:860px; flex-shrink:0;
   padding:5px 10px; gap:4px;
-  transform-origin: center center;
+  position:fixed; left:0; top:0;
+  transform-origin: top left;
 }
 #title-bar {
   text-align:center; font-size:12px; letter-spacing:4px;
@@ -1883,8 +1884,11 @@ function diagApplyResult() {
 let gameScale = 1;
 function scaleGame() {
   const DESIGN_W = 1100, DESIGN_H = 860;
-  gameScale = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H);
-  document.getElementById('game').style.transform = `scale(${gameScale})`;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  gameScale = Math.min(vw / DESIGN_W, vh / DESIGN_H);
+  const ox = (vw - DESIGN_W * gameScale) / 2;
+  const oy = (vh - DESIGN_H * gameScale) / 2;
+  document.getElementById('game').style.transform = `translate(${ox}px,${oy}px) scale(${gameScale})`;
 }
 window.addEventListener('resize', scaleGame);
 
