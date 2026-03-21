@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>BIG FIVE CARD GAME</title>
+<title>心理学カードゲーム「ビッグファイブ」</title>
 <style>
 /* ===== RESET ===== */
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -16,86 +16,181 @@ body {
 }
 
 /* ========================================
-   START OVERLAY
+   START OVERLAY – STEP WIZARD
    ======================================== */
 #start-overlay {
-  position:fixed; inset:0; background:rgba(2,4,2,0.97);
+  position:fixed; inset:0;
+  background: url('images/心理カードゲーム タイトル画面.png') center center / contain no-repeat, #020402;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+  z-index:3000; padding:20px 20px 60px; overflow-y:auto;
+}
+#start-overlay::before {
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    linear-gradient(rgba(255,215,0,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,215,0,0.022) 1px, transparent 1px);
+  background-size:50px 50px;
+  animation:gridDrift 30s linear infinite;
+}
+#start-overlay::after {
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background: radial-gradient(ellipse at 50% 45%, rgba(255,215,0,0.055) 0%, transparent 62%);
+}
+
+/* Wizard content wrapper - テキストエリアだけ暗幕 */
+#wizard-wrap {
+  display:flex; flex-direction:column; align-items:center; gap:0;
+  background: rgba(2,4,2,0.65);
+  border-radius:20px; padding:24px 32px 28px;
+  z-index:1; width:100%; max-width:520px;
+}
+@keyframes gridDrift { to { background-position:50px 50px; } }
+
+/* Logo */
+.start-logo {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  z-index:1; margin-bottom:14px;
+}
+.start-genre {
+  font-size:11px; color:rgba(255,215,0,0.65); letter-spacing:4px;
+  display:flex; align-items:center; gap:10px;
+}
+.start-genre::before, .start-genre::after {
+  content:''; width:36px; height:1px; background:rgba(255,215,0,0.3);
+}
+.start-title { font-size:26px; font-weight:900; color:#FFD700; text-shadow:0 0 28px rgba(255,215,0,0.55), 0 0 55px rgba(255,215,0,0.18); letter-spacing:4px; }
+.start-sub { font-size:10px; color:rgba(255,255,255,0.38); letter-spacing:3px; margin-top:-4px; font-style:italic; }
+
+/* Step indicator */
+.step-indicator {
+  display:flex; align-items:center; gap:6px; z-index:1; margin-bottom:18px;
+}
+.step-dot {
+  height:5px; border-radius:3px; background:rgba(255,255,255,0.12);
+  transition:all 0.4s cubic-bezier(.4,0,.2,1); width:5px;
+}
+.step-dot.done   { background:rgba(255,215,0,0.38); width:5px; }
+.step-dot.current { background:#FFD700; box-shadow:0 0 8px rgba(255,215,0,0.65); width:22px; }
+
+/* Steps container */
+#steps-container { position:relative; width:100%; max-width:500px; }
+
+/* Step panels */
+.step-panel { display:none; flex-direction:column; align-items:center; gap:18px; padding:4px 0 8px; }
+.step-panel.active { display:flex; animation:stepIn 0.38s cubic-bezier(.4,0,.2,1); }
+@keyframes stepIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.step-eyebrow { font-size:9px; color:rgba(255,255,255,0.25); letter-spacing:3px; }
+.step-heading  { font-size:17px; font-weight:900; color:#fff; letter-spacing:2px; margin-top:-6px; }
+
+/* Selection cards */
+.sel-grid { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+.sel-card {
+  min-width:110px; padding:18px 16px;
+  border:2px solid rgba(255,255,255,0.12); border-radius:16px;
+  background:rgba(255,255,255,0.04); color:#fff;
+  cursor:pointer; transition:all 0.22s;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  z-index:3000; gap:14px; padding:20px; overflow-y:auto;
+  gap:7px; font-family:inherit;
 }
-.start-title { font-size:22px; font-weight:900; color:#FFD700; text-shadow:0 0 20px rgba(255,215,0,0.5); letter-spacing:4px; }
-.start-sub { font-size:10px; color:rgba(255,255,255,0.3); letter-spacing:3px; margin-top:-8px; }
-.start-section { display:flex; flex-direction:column; align-items:center; gap:8px; }
-.start-label { font-size:10px; color:rgba(255,255,255,0.42); letter-spacing:2px; }
+.sel-card .sel-icon  { font-size:34px; line-height:1; }
+.sel-card .sel-label { font-size:11px; letter-spacing:2px; color:rgba(255,255,255,0.52); }
+.sel-card .sel-desc  { font-size:9px; color:rgba(255,255,255,0.35); text-align:center; line-height:1.5; }
+.sel-card:hover { border-color:rgba(255,215,0,0.35); background:rgba(255,215,0,0.06); }
+.sel-card.sel-active { border-color:#FFD700; background:rgba(255,215,0,0.12); box-shadow:0 0 22px rgba(255,215,0,0.28); }
+.sel-card.sel-active .sel-label { color:rgba(255,215,0,0.7); }
+.sel-card.easy.sel-active { border-color:#4CAF50; background:rgba(76,175,80,0.12); box-shadow:0 0 22px rgba(76,175,80,0.28); }
+.sel-card.hard.sel-active { border-color:#FF4444; background:rgba(255,68,68,0.12); box-shadow:0 0 22px rgba(255,68,68,0.28); }
 
-.gender-btns { display:flex; gap:14px; }
-.gender-btn {
-  width:88px; height:70px; border:2px solid rgba(255,255,255,0.16); border-radius:12px;
-  background:rgba(255,255,255,0.04); color:#fff; font-size:26px;
-  cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:2px; font-family:inherit;
+/* OCEAN manual input */
+.ocean-rows { display:flex; flex-direction:column; gap:10px; width:100%; max-width:390px; }
+.ocean-row   { display:flex; align-items:center; gap:8px; }
+.ocean-key   { width:14px; font-size:14px; font-weight:900; color:#FFD700; flex-shrink:0; text-align:center; }
+.ocean-name  { width:68px; font-size:8.5px; color:rgba(255,255,255,0.36); flex-shrink:0; }
+.ocean-gauge-wrap { flex:1; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
+.ocean-gauge-fill { height:100%; background:linear-gradient(90deg,#2E7D32,#8BC34A); border-radius:3px; transition:width 0.4s cubic-bezier(.4,0,.2,1); }
+.ocean-btns  { display:flex; gap:3px; }
+.ocean-btn {
+  width:26px; height:26px; border:1px solid rgba(255,255,255,0.1); border-radius:5px;
+  background:rgba(255,255,255,0.03); color:rgba(255,255,255,0.38); font-size:11px;
+  font-weight:900; cursor:pointer; transition:all 0.12s; font-family:inherit;
 }
-.gender-btn span { font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:1px; }
-.gender-btn.selected { border-color:#FFD700; background:rgba(255,215,0,0.14); box-shadow:0 0 16px rgba(255,215,0,0.28); }
+.ocean-btn.sel { background:rgba(255,215,0,0.22); border-color:#FFD700; color:#FFD700; box-shadow:0 0 6px rgba(255,215,0,0.22); }
+.ocean-val   { width:26px; text-align:right; font-size:13px; font-weight:900; color:#8BC34A; flex-shrink:0; }
 
-.diff-btn {
-  width:108px; height:60px; border:2px solid rgba(255,255,255,0.16); border-radius:12px;
-  background:rgba(255,255,255,0.04); color:#fff; font-size:22px;
-  cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:2px; font-family:inherit;
+/* Status confirmed message */
+.status-confirmed {
+  display:none; padding:7px 22px; border-radius:20px;
+  background:rgba(76,175,80,0.1); border:1px solid rgba(76,175,80,0.28);
+  color:#8BC34A; font-size:11px; letter-spacing:2px;
 }
-.diff-btn span { font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:1px; }
-.diff-btn.selected { border-color:#FFD700; background:rgba(255,215,0,0.14); box-shadow:0 0 16px rgba(255,215,0,0.28); }
+.status-confirmed.show { display:block; animation:confirmPop 0.38s cubic-bezier(.4,0,.2,1); }
+@keyframes confirmPop { from{opacity:0;transform:scale(0.84)} to{opacity:1;transform:scale(1)} }
+
+/* Next button */
+.step-next-btn {
+  padding:9px 32px; background:linear-gradient(135deg,#1b5e1b,#2d8c2d);
+  border:1px solid rgba(139,195,74,0.4); border-radius:20px; color:#fff;
+  font-size:13px; font-weight:900; font-family:inherit; cursor:pointer;
+  transition:all 0.2s; letter-spacing:1px;
+}
+.step-next-btn:hover { background:linear-gradient(135deg,#2a7a2a,#3da83d); box-shadow:0 0 16px rgba(139,195,74,0.38); }
+.step-next-btn:disabled { opacity:0.28; cursor:not-allowed; }
+
+/* Confirm summary */
+.confirm-summary {
+  background:rgba(0,0,0,0.44); border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px; padding:18px 24px; width:100%; max-width:370px;
+  display:flex; flex-direction:column; gap:14px;
+}
+.confirm-row { display:flex; justify-content:space-between; align-items:center; }
+.confirm-label { font-size:9px; color:rgba(255,255,255,0.3); letter-spacing:2px; }
+.confirm-val   { font-size:13px; font-weight:900; color:#FFD700; }
+.confirm-ocean { display:flex; gap:10px; }
+.confirm-ocean-item { text-align:center; }
+.confirm-ocean-k { font-size:8px; font-weight:900; color:rgba(255,215,0,0.62); }
+.confirm-ocean-v { font-size:16px; font-weight:900; }
+.confirm-field { font-size:11px; font-weight:900; color:#8BC34A; }
+
+/* Sound toggle */
 .sound-toggle {
-  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18);
-  border-radius:10px; color:rgba(255,255,255,0.6); font-size:13px;
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15);
+  border-radius:10px; color:rgba(255,255,255,0.5); font-size:12px;
   padding:7px 20px; cursor:pointer; transition:all 0.2s; font-family:inherit;
 }
 .sound-toggle.on {
-  border-color:#FFD700; background:rgba(255,215,0,0.14);
-  color:#FFD700; box-shadow:0 0 12px rgba(255,215,0,0.2);
+  border-color:#FFD700; background:rgba(255,215,0,0.12);
+  color:#FFD700; box-shadow:0 0 10px rgba(255,215,0,0.18);
 }
-.diff-btn.easy.selected { border-color:#4CAF50; background:rgba(76,175,80,0.14); box-shadow:0 0 16px rgba(76,175,80,0.28); }
-.diff-btn.hard.selected { border-color:#FF4444; background:rgba(255,68,68,0.14); box-shadow:0 0 16px rgba(255,68,68,0.28); }
 
-.diag-wrap {
-  background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08);
-  border-radius:10px; padding:12px 16px; display:flex; flex-direction:column; gap:7px;
-  width:100%; max-width:400px;
+/* START button */
+.btn-start-big {
+  padding:18px 64px; background:linear-gradient(135deg,#1b5e1b,#2d8c2d);
+  border:2px solid rgba(139,195,74,0.5); border-radius:40px; color:#fff;
+  font-size:22px; font-weight:900; font-family:inherit; cursor:pointer;
+  letter-spacing:5px; transition:all 0.28s;
+  box-shadow:0 0 28px rgba(76,175,80,0.28), inset 0 1px 0 rgba(255,255,255,0.1);
+  animation:startPulse 2.5s ease infinite;
 }
-.diag-row { display:flex; align-items:center; gap:8px; }
-.diag-trait { width:90px; text-align:right; flex-shrink:0; font-size:9px; color:rgba(255,255,255,0.5); }
-.diag-trait strong { font-size:11px; font-weight:900; color:#FFD700; }
-.diag-btns-wrap { display:flex; gap:3px; flex:1; }
-.diag-btn {
-  flex:1; height:26px; border:1px solid rgba(255,255,255,0.12); border-radius:5px;
-  background:rgba(255,255,255,0.03); color:rgba(255,255,255,0.4); font-size:11px;
-  font-weight:900; cursor:pointer; transition:all 0.12s; font-family:inherit;
+.btn-start-big:hover {
+  background:linear-gradient(135deg,#2a7a2a,#3da83d);
+  box-shadow:0 0 55px rgba(76,175,80,0.65), 0 0 100px rgba(76,175,80,0.18), inset 0 1px 0 rgba(255,255,255,0.15);
+  transform:translateY(-3px) scale(1.04);
+  animation:none;
 }
-.diag-btn.sel { background:rgba(255,215,0,0.22); border-color:#FFD700; color:#FFD700; }
-.diag-val { width:28px; text-align:right; font-size:11px; font-weight:900; flex-shrink:0; color:#8BC34A; }
+@keyframes startPulse {
+  0%,100% { box-shadow:0 0 28px rgba(76,175,80,0.28); }
+  50%      { box-shadow:0 0 50px rgba(76,175,80,0.55), 0 0 80px rgba(76,175,80,0.14); }
+}
 
-.start-preview {
-  display:flex; gap:8px; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.07);
-  border-radius:8px; padding:8px 14px; align-items:center;
+/* Step navigation */
+.step-nav { display:flex; gap:12px; align-items:center; margin-top:4px; }
+.step-back {
+  font-size:10px; color:rgba(255,255,255,0.28); cursor:pointer;
+  padding:5px 14px; border:1px solid rgba(255,255,255,0.1); border-radius:20px;
+  background:none; font-family:inherit; transition:all 0.2s; letter-spacing:1px;
 }
-.sp-vals { display:flex; gap:8px; }
-.sp-item { text-align:center; }
-.sp-l { font-size:8px; font-weight:900; color:#FFD700; }
-.sp-v { font-size:15px; font-weight:900; }
-.sp-sep { width:1px; background:rgba(255,255,255,0.1); align-self:stretch; }
-.sp-field { font-size:9px; text-align:center; }
-.sp-field-lbl { color:rgba(255,255,255,0.35); margin-bottom:2px; }
-.sp-field-name { color:#8BC34A; font-weight:900; font-size:11px; }
-
-.btn-start-game {
-  padding:11px 36px; background:linear-gradient(135deg,#1b5e1b,#2d8c2d);
-  border:1px solid rgba(139,195,74,0.4); border-radius:24px; color:#fff;
-  font-size:14px; font-weight:900; font-family:inherit; cursor:pointer;
-  transition:all 0.2s; letter-spacing:2px;
-}
-.btn-start-game:hover { background:linear-gradient(135deg,#2a7a2a,#3da83d); box-shadow:0 0 20px rgba(139,195,74,0.4); }
-.btn-start-game:disabled { opacity:0.35; cursor:not-allowed; }
+.step-back:hover { color:rgba(255,255,255,0.6); border-color:rgba(255,255,255,0.25); }
 
 /* ========================================
    GAME LAYOUT
@@ -112,10 +207,9 @@ body {
   flex-shrink:0; padding:1px 0; position:relative;
 }
 #mute-btn {
-  position:absolute; right:8px; top:50%; transform:translateY(-50%);
   background:none; border:1px solid rgba(255,255,255,0.2); border-radius:6px;
   color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer;
-  padding:2px 6px; line-height:1; transition:all 0.2s;
+  padding:2px 8px; line-height:1; transition:all 0.2s; font-family:inherit;
 }
 #mute-btn:hover { border-color:rgba(255,255,255,0.5); color:#fff; }
 
@@ -289,7 +383,7 @@ body {
 .sc3-row.leading .sc3-val::after { content:'★'; font-size:8px; margin-left:2px; }
 
 /* ===== LOG ===== */
-#log { background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:5px 8px; width:130px; max-height:56px; overflow:hidden; font-size:9px; line-height:1.65; flex-shrink:0; }
+#log { background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:5px 8px; width:130px; max-height:198px; overflow-y:auto; font-size:9px; line-height:1.65; flex-shrink:0; }
 #log::-webkit-scrollbar { width:3px; }
 #log::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.18); border-radius:2px; }
 .le { animation:slideIn .25s ease; border-bottom:1px solid rgba(255,255,255,0.04); }
@@ -298,7 +392,8 @@ body {
 @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
 
 /* ===== BUTTONS ===== */
-#btns { display:flex; gap:8px; justify-content:center; flex-shrink:0; padding-bottom:3px; }
+#btns { display:flex; gap:8px; justify-content:center; align-items:center; flex-shrink:0; padding-bottom:3px; }
+#how { font-size:9px; color:rgba(255,255,255,0.22); line-height:1.4; }
 .btn { padding:5px 18px; border:1px solid rgba(255,255,255,0.18); border-radius:20px; background:rgba(255,255,255,0.07); color:#fff; font-size:11px; cursor:pointer; transition:all 0.2s; font-family:inherit; }
 .btn:hover { background:rgba(255,255,255,0.14); border-color:rgba(255,255,255,0.35); transform:translateY(-1px); }
 .btn-green { background:linear-gradient(135deg,#1b5e1b,#2d8c2d); border-color:rgba(139,195,74,0.45); }
@@ -315,15 +410,6 @@ body {
 .particle { position:fixed; width:7px; height:7px; border-radius:50%; pointer-events:none; z-index:1000; animation:ptcl 0.75s ease forwards; }
 @keyframes ptcl { 0%{transform:translate(0,0) scale(1);opacity:1} 100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0} }
 
-/* ===== HISTORY ===== */
-#history-row { display:flex; align-items:center; gap:8px; padding:2px 8px; flex-shrink:0; min-height:58px; }
-#hist-label { font-size:8px; color:rgba(255,255,255,0.28); letter-spacing:1px; flex-shrink:0; writing-mode:vertical-lr; transform:rotate(180deg); line-height:1.4; }
-#hist-cards { display:flex; gap:5px; flex:1; overflow-x:auto; padding:2px 0 4px; align-items:flex-end; }
-#hist-cards::-webkit-scrollbar { height:3px; }
-#hist-cards::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.15); border-radius:2px; }
-#hist-empty { font-size:9px; color:rgba(255,255,255,0.18); padding:4px 8px; font-style:italic; }
-.hcard { flex-shrink:0; width:44px; height:54px; border-radius:5px; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:3px 2px; animation:hcardIn 0.35s cubic-bezier(.4,0,.2,1); border:1.5px solid; }
-@keyframes hcardIn { from{transform:scale(0.3) translateY(-15px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
 .hcard.atk { background:linear-gradient(160deg,#6B1C0A,#C04020); border-color:rgba(255,138,101,0.75); }
 .hcard.def { background:linear-gradient(160deg,#062052,#1565C0); border-color:rgba(66,165,245,0.75); }
 .hcard.p  { box-shadow:0 0 7px rgba(139,195,74,0.55); }
@@ -340,7 +426,7 @@ body {
 /* ===== TARGET SELECT MODAL ===== */
 #target-modal {
   display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82);
-  z-index:1500; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  z-index:9999; flex-direction:column; align-items:center; justify-content:center; gap:18px;
 }
 #target-modal.show { display:flex; }
 .target-title { font-size:13px; color:#FFD700; letter-spacing:1px; }
@@ -475,55 +561,103 @@ body {
 </div>
 
 <!-- ========================================
-     START OVERLAY
+     START OVERLAY  (step wizard)
      ======================================== -->
 <div id="start-overlay">
-  <div class="start-title">✦ BIG FIVE CARD GAME ✦</div>
-  <div class="start-sub">ビッグファイブ × カードゲーム</div>
 
-  <div class="start-section">
-    <div class="start-label">▸ 性別を選んでください</div>
-    <div class="gender-btns">
-      <button class="gender-btn" id="btn-male"   onclick="selectGender('male')">♂<span>男</span></button>
-      <button class="gender-btn" id="btn-female" onclick="selectGender('female')">♀<span>女</span></button>
+  <div id="wizard-wrap">
+
+
+  <!-- ステップインジケーター -->
+  <div class="step-indicator">
+    <div class="step-dot current" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+    <div class="step-dot" id="dot-3"></div>
+    <div class="step-dot" id="dot-4"></div>
+    <div class="step-dot" id="dot-5"></div>
+  </div>
+
+  <!-- ステップコンテナ -->
+  <div id="steps-container">
+
+    <!-- STEP 1: 性別選択 -->
+    <div class="step-panel active" id="step-1">
+      <div class="step-eyebrow">STEP 1 / 5</div>
+      <div class="step-heading">性別を選択してください</div>
+      <div class="sel-grid">
+        <button class="sel-card" id="sel-male" onclick="selectGender('male')">
+          <span class="sel-icon">♂</span>
+          <span class="sel-label">男性</span>
+        </button>
+        <button class="sel-card" id="sel-female" onclick="selectGender('female')">
+          <span class="sel-icon">♀</span>
+          <span class="sel-label">女性</span>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <div class="start-section">
-    <div class="start-label">▸ 難易度を選んでください</div>
-    <div class="gender-btns">
-      <button class="diff-btn easy" id="btn-easy" onclick="selectDifficulty('easy')">🌱<span>イージー</span></button>
-      <button class="diff-btn" id="btn-normal" onclick="selectDifficulty('normal')">🎮<span>ノーマル</span></button>
-      <button class="diff-btn hard" id="btn-hard" onclick="selectDifficulty('hard')">💀<span>ハード</span></button>
+    <!-- STEP 2: 難易度選択 -->
+    <div class="step-panel" id="step-2">
+      <div class="step-eyebrow">STEP 2 / 5</div>
+      <div class="step-heading">難易度を選択してください</div>
+      <div class="sel-grid">
+        <button class="sel-card easy" id="sel-easy" onclick="wizSelectDiff('easy')">
+          <span class="sel-icon">🌱</span>
+          <span class="sel-label">イージー</span>
+        </button>
+        <button class="sel-card" id="sel-normal" onclick="wizSelectDiff('normal')">
+          <span class="sel-icon">🎮</span>
+          <span class="sel-label">ノーマル</span>
+        </button>
+        <button class="sel-card hard" id="sel-hard" onclick="wizSelectDiff('hard')">
+          <span class="sel-icon">💀</span>
+          <span class="sel-label">ハード</span>
+        </button>
+      </div>
+      <div class="step-nav"><button class="step-back" onclick="goToStep(1)">← 戻る</button></div>
     </div>
-  </div>
 
-  <div class="start-section">
-    <div class="start-label">▸ サウンド</div>
-    <div class="gender-btns">
-      <button class="sound-toggle on" id="btn-sound" onclick="toggleSound()">🔊 ON</button>
+    <!-- STEP 3: OCEAN入力方式 -->
+    <div class="step-panel" id="step-3">
+      <div class="step-eyebrow">STEP 3 / 5</div>
+      <div class="step-heading">ステータス入力方法</div>
+      <div class="sel-grid">
+        <button class="sel-card" onclick="selectOceanMethod('auto')">
+          <span class="sel-icon">📋</span>
+          <span class="sel-label">診断テスト</span>
+          <span class="sel-desc">20問の診断で<br>自動入力</span>
+        </button>
+        <button class="sel-card" onclick="selectOceanMethod('manual')">
+          <span class="sel-icon">✏️</span>
+          <span class="sel-label">手動で入力</span>
+          <span class="sel-desc">1〜5で<br>自由に設定</span>
+        </button>
+      </div>
+      <div class="step-nav"><button class="step-back" onclick="goToStep(2)">← 戻る</button></div>
     </div>
-  </div>
 
-  <div class="start-section">
-    <button class="btn-diag" onclick="openDiagModal()">📋 診断テストで自動入力</button>
-  </div>
-  <div class="start-or">— または手動で入力 —</div>
-  <div class="start-section">
-    <div class="start-label">▸ 診断テスト結果を入力（1〜5）</div>
-    <div class="diag-wrap" id="diag-wrap"></div>
-  </div>
-
-  <div class="start-preview">
-    <div class="sp-vals" id="sp-vals"></div>
-    <div class="sp-sep"></div>
-    <div class="sp-field">
-      <div class="sp-field-lbl">あなたの職業</div>
-      <div class="sp-field-name" id="sp-field-name">—</div>
+    <!-- STEP 4: OCEAN値入力（手動） -->
+    <div class="step-panel" id="step-4">
+      <div class="step-eyebrow">STEP 4 / 5</div>
+      <div class="step-heading">初期ステータスを設定</div>
+      <div class="ocean-rows" id="ocean-rows"></div>
+      <div class="status-confirmed" id="status-confirmed">✦ 初期ステータスが確定しました</div>
+      <button class="step-next-btn" id="step4-next" onclick="goToStep(5)">確定して次へ →</button>
+      <div class="step-nav"><button class="step-back" onclick="goToStep(3)">← 戻る</button></div>
     </div>
-  </div>
 
-  <button class="btn-start-game" id="btn-game-start" onclick="startGame()" disabled>ゲーム開始</button>
+    <!-- STEP 5: 最終確認 + START -->
+    <div class="step-panel" id="step-5">
+      <div class="step-eyebrow">STEP 5 / 5</div>
+      <div class="step-heading">確認して始めよう</div>
+      <div class="confirm-summary" id="confirm-summary"></div>
+      <button class="sound-toggle on" id="btn-sound" onclick="toggleSound()">🔊 サウンド ON</button>
+      <button class="btn-start-big" onclick="startGame()">START</button>
+      <div class="step-nav"><button class="step-back" onclick="goToStep(4)">← 戻る</button></div>
+    </div>
+
+  </div><!-- /steps-container -->
+  </div><!-- /wizard-wrap -->
 </div>
 
 <!-- ========================================
@@ -544,19 +678,47 @@ body {
 <div id="win-overlay">
   <div id="win-msg"></div>
   <div id="win-detail"></div>
-  <button class="btn btn-green" onclick="returnToStart()">もう一度</button>
+  <button class="btn btn-green" onclick="returnToStart(5)">もう一度</button>
 </div>
 
 <!-- ========================================
      GAME
      ======================================== -->
 <div id="game">
-  <div id="title-bar">✦ BIG FIVE CARD GAME ✦
-    <button id="mute-btn" onclick="toggleMute()">🔊</button>
-  </div>
+  <div id="title-bar">心理学カードゲーム「ビッグファイブ」</div>
   <audio id="bgm" src="BGM/km_BGM作成_360p_12f_20260321_053419_21032026.mp3" loop></audio>
   <audio id="bgm-bad" src="BGM/月のダンジョン (1).mp3" loop></audio>
   <audio id="bgm-role" src="BGM/朝.mp3" loop></audio>
+  <audio id="se-atk"       src="BGM/音声/ATKカード使用.mp3"></audio>
+  <audio id="se-def"       src="BGM/音声/DEFカード使用.mp3"></audio>
+  <audio id="se-draw"      src="BGM/音声/カードをドロー.mp3"></audio>
+  <audio id="se-click"     src="BGM/音声/カードをクリック.mp3"></audio>
+  <audio id="se-start-btn" src="BGM/音声/ゲーム開始ボタン.mp3"></audio>
+  <audio id="se-setup"     src="BGM/音声/ゲーム開始時の性別難易度の設定音.mp3"></audio>
+  <audio id="se-match"     src="BGM/音声/即時勝利（フィールド一致）.mp3"></audio>
+  <audio id="se-role"      src="BGM/音声/ロールモデル達成.mp3"></audio>
+  <audio id="se-bad"       src="BGM/音声/悪い状態になった.mp3"></audio>
+  <audio id="se-win"       src="BGM/音声/勝利.mp3"></audio>
+  <audio id="se-lose"      src="BGM/音声/敗北.mp3"></audio>
+  <audio id="se-deck"      src="BGM/音声/デッキ切れ.mp3"></audio>
+  <!-- キャラクターボイス: pm=プレイヤー男 pf=プレイヤー女 cm=CPU男 cf=CPU女 -->
+  <audio id="voice-pm-greeting" src="BGM/音声/プレイヤー男/挨拶.mp3"></audio>
+  <audio id="voice-pm-atk"      src="BGM/音声/プレイヤー男/攻撃.mp3"></audio>
+  <audio id="voice-pm-win"      src="BGM/音声/プレイヤー男/勝利.mp3"></audio>
+  <audio id="voice-pm-lose"     src="BGM/音声/プレイヤー男/敗北.mp3"></audio>
+  <audio id="voice-pm-dmg"      src="BGM/音声/プレイヤー男/ダメージ.mp3"></audio>
+  <audio id="voice-pf-greeting" src="BGM/音声/プレイヤー女/挨拶.mp3"></audio>
+  <audio id="voice-pf-atk"      src="BGM/音声/プレイヤー女/攻撃.mp3"></audio>
+  <audio id="voice-pf-win"      src="BGM/音声/プレイヤー女/勝利.mp3"></audio>
+  <audio id="voice-pf-lose"     src="BGM/音声/プレイヤー女/敗北.mp3"></audio>
+  <audio id="voice-cm-greeting" src="BGM/音声/CPU男/挨拶.mp3"></audio>
+  <audio id="voice-cm-atk"      src="BGM/音声/CPU男/攻撃.mp3"></audio>
+  <audio id="voice-cm-win"      src="BGM/音声/CPU男/勝利.mp3"></audio>
+  <audio id="voice-cm-lose"     src="BGM/音声/CPU男/敗北.mp3"></audio>
+  <audio id="voice-cf-greeting" src="BGM/音声/CPU女/挨拶.mp3"></audio>
+  <audio id="voice-cf-atk"      src="BGM/音声/CPU女/攻撃.mp3"></audio>
+  <audio id="voice-cf-win"      src="BGM/音声/CPU女/勝利.mp3"></audio>
+  <audio id="voice-cf-lose"     src="BGM/音声/CPU女/敗北.mp3"></audio>
 
   <!-- CPU row -->
   <div id="cpu-row">
@@ -614,12 +776,6 @@ body {
     </div>
   </div>
 
-  <!-- History -->
-  <div id="history-row">
-    <div id="hist-label">使用済み</div>
-    <div id="hist-cards"><div id="hist-empty">まだカードが使われていません</div></div>
-  </div>
-
   <!-- Player row -->
   <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-shrink:0;">
     <div class="stat-panel panel-player" id="player-stats-panel"></div>
@@ -630,11 +786,11 @@ body {
   </div>
 
   <div id="btns">
+    <span id="how">ATK→攻撃対象を選択 ／ DEF→自分のステータスUP ／ フィールドと一致で勝利！</span>
+    <button id="mute-btn" onclick="toggleMute()">🔊</button>
     <button class="btn" onclick="returnToStart()">タイトルへ</button>
   </div>
 </div>
-
-<div id="how">ATKカード→攻撃対象を選択<br>DEFカード→自分のステータスUP<br>フィールドと一致した瞬間に勝利！</div>
 
 <script>
 // ============================================================
@@ -730,63 +886,158 @@ const PC = [
 // ============================================================
 //  START SCREEN STATE
 // ============================================================
-let startGender = null;
+let startGender    = null;
 let startDifficulty = 'easy';
-let diagVals = [3,3,3,3,3];
+let diagVals        = [3,3,3,3,3];
+let currentStep     = 1;
 
+/* ── localStorage 保存・復元 ── */
+function saveToLocalStorage() {
+  if(startGender)     localStorage.setItem('bf_gender',     startGender);
+  if(startDifficulty) localStorage.setItem('bf_difficulty', startDifficulty);
+  localStorage.setItem('bf_diag', JSON.stringify(diagVals));
+}
+function restoreFromLocalStorage() {
+  const g = localStorage.getItem('bf_gender');
+  if(g) startGender = g;
+  const d = localStorage.getItem('bf_difficulty');
+  if(d) startDifficulty = d;
+  const v = localStorage.getItem('bf_diag');
+  if(v) { try { const arr = JSON.parse(v); if(Array.isArray(arr)&&arr.length===5) diagVals=arr; } catch(e){} }
+  const s = localStorage.getItem('bf_sound');
+  if(s !== null) soundEnabled = s === 'true';
+}
+
+/* ── ステップ移動 ── */
+function goToStep(n) {
+  const cur = document.getElementById('step-' + currentStep);
+  if(cur) cur.classList.remove('active');
+  currentStep = n;
+  const next = document.getElementById('step-' + n);
+  if(next) { next.classList.remove('active'); void next.offsetWidth; next.classList.add('active'); }
+  updateStepIndicator();
+  if(n === 4) buildOceanUI();
+  if(n === 5) renderConfirmSummary();
+}
+
+function updateStepIndicator() {
+  for(let i=1; i<=5; i++){
+    const dot = document.getElementById('dot-'+i);
+    if(!dot) continue;
+    dot.className = 'step-dot' + (i < currentStep ? ' done' : i === currentStep ? ' current' : '');
+  }
+}
+
+/* ── 性別選択（クリックで自動的に次ステップへ） ── */
+function selectGender(g) {
+  playSE('se-setup');
+  startGender = g;
+  const sm = document.getElementById('sel-male');
+  const sf = document.getElementById('sel-female');
+  if(sm) sm.classList.toggle('sel-active', g==='male');
+  if(sf) sf.classList.toggle('sel-active', g==='female');
+  setTimeout(() => goToStep(2), 380);
+}
+
+/* ── 難易度選択（ウィザード用）── */
+function wizSelectDiff(d) {
+  playSE('se-setup');
+  startDifficulty = d;
+  ['easy','normal','hard'].forEach(k => {
+    const el = document.getElementById('sel-'+k);
+    if(el) el.classList.toggle('sel-active', k===d);
+  });
+  setTimeout(() => goToStep(3), 380);
+}
+
+/* ── 難易度選択（互換用・内部呼び出し） ── */
 function selectDifficulty(d) {
   startDifficulty = d;
-  document.getElementById('btn-easy').classList.toggle('selected', d==='easy');
-  document.getElementById('btn-normal').classList.toggle('selected', d==='normal');
-  document.getElementById('btn-hard').classList.toggle('selected', d==='hard');
 }
 
-function selectGender(g) {
-  startGender = g;
-  document.getElementById('btn-male').classList.toggle('selected', g==='male');
-  document.getElementById('btn-female').classList.toggle('selected', g==='female');
-  document.getElementById('btn-game-start').disabled = false;
-  updatePreview();
+/* ── OCEAN入力方式選択 ── */
+function selectOceanMethod(method) {
+  if(method === 'auto') {
+    openDiagModal();          // 診断モーダルを開く（完了後に goToStep(5) が呼ばれる）
+  } else {
+    goToStep(4);              // 手動入力ステップへ
+  }
 }
 
+/* ── OCEAN手動入力UI ── */
+function buildOceanUI() {
+  document.getElementById('ocean-rows').innerHTML = STAT_LABS.map((l,i) => `
+    <div class="ocean-row">
+      <span class="ocean-key">${l}</span>
+      <span class="ocean-name">${STAT_NAMES[i]}</span>
+      <div class="ocean-gauge-wrap"><div class="ocean-gauge-fill" id="og-${i}" style="width:${diagVals[i]/5*100}%"></div></div>
+      <div class="ocean-btns">
+        ${[1,2,3,4,5].map(v=>`<button class="ocean-btn${v===diagVals[i]?' sel':''}" onclick="setDiag(${i},${v})">${v}</button>`).join('')}
+      </div>
+      <span class="ocean-val" id="ov-${i}">${diagVals[i]*10}</span>
+    </div>`).join('');
+  // デフォルト値が入っているので最初から「確定済み」にする
+  const c = document.getElementById('status-confirmed');
+  if(c) c.classList.add('show');
+}
+
+/* ── OCEAN値変更 ── */
 function setDiag(trait, val) {
   diagVals[trait] = val;
-  document.querySelectorAll(`#dg-${trait} .diag-btn`).forEach((b,i) => b.classList.toggle('sel', i+1===val));
-  document.getElementById(`dv-${trait}`).textContent = val * 10;
-  updatePreview();
+  // ゲージ＋ボタン更新
+  const gauge = document.getElementById('og-'+trait);
+  if(gauge) gauge.style.width = (val/5*100)+'%';
+  const rows = document.querySelectorAll('#ocean-rows .ocean-row');
+  if(rows[trait]) {
+    rows[trait].querySelectorAll('.ocean-btn').forEach((b,i) => b.classList.toggle('sel', i+1===val));
+  }
+  const ov = document.getElementById('ov-'+trait);
+  if(ov) ov.textContent = val*10;
+  // 確定メッセージ表示
+  const c = document.getElementById('status-confirmed');
+  if(c) c.classList.add('show');
 }
 
-function buildDiagUI() {
-  document.getElementById('diag-wrap').innerHTML = STAT_LABS.map((l,i) => `
-    <div class="diag-row">
-      <div class="diag-trait"><strong>${l}</strong> ${STAT_NAMES[i]}</div>
-      <div class="diag-btns-wrap" id="dg-${i}">
-        ${[1,2,3,4,5].map(v=>`<button class="diag-btn${v===3?' sel':''}" onclick="setDiag(${i},${v})">${v}</button>`).join('')}
-      </div>
-      <div class="diag-val" id="dv-${i}">30</div>
-    </div>`).join('');
-}
-
+/* ── 最も近いフィールドを取得 ── */
 function getClosestField(stats) {
   let best = null, bestD = Infinity;
   FLD.forEach(f => { const d = dist(stats, f.sv); if(d < bestD){ bestD = d; best = f; } });
   return best;
 }
 
+/* ── プレビュー更新（互換用） ── */
 function updatePreview() {
-  const stats = diagVals.map(v => v * 10);
-  document.getElementById('sp-vals').innerHTML = STAT_LABS.map((l,i) =>
-    `<div class="sp-item"><div class="sp-l">${l}</div><div class="sp-v">${stats[i]}</div></div>`
-  ).join('');
-  const f = getClosestField(stats);
-  document.getElementById('sp-field-name').textContent = f ? f.name : '—';
+  // step5 の renderConfirmSummary で描画するため、ここでは何もしない
 }
 
-function returnToStart() {
+/* ── 確認サマリー（step5） ── */
+function renderConfirmSummary() {
+  const stats  = diagVals.map(v => v * 10);
+  const field  = getClosestField(stats);
+  const gLabel = startGender === 'male' ? '♂ 男性' : '♀ 女性';
+  const dLabel = startDifficulty === 'easy' ? '🌱 イージー'
+               : startDifficulty === 'normal' ? '🎮 ノーマル' : '💀 ハード';
+  const oceanHtml = STAT_LABS.map((l,i) =>
+    `<div class="confirm-ocean-item"><div class="confirm-ocean-k">${l}</div><div class="confirm-ocean-v">${stats[i]}</div></div>`
+  ).join('');
+  const el = document.getElementById('confirm-summary');
+  if(el) el.innerHTML = `
+    <div class="confirm-row"><span class="confirm-label">性別</span><span class="confirm-val">${gLabel}</span></div>
+    <div class="confirm-row"><span class="confirm-label">難易度</span><span class="confirm-val">${dLabel}</span></div>
+    <div class="confirm-row"><span class="confirm-label">OCEAN ステータス</span><div class="confirm-ocean">${oceanHtml}</div></div>
+    <div class="confirm-row"><span class="confirm-label">予測される職業</span><span class="confirm-field">${field ? field.name : '—'}</span></div>`;
+  // サウンドボタン状態を同期
+  const sBtn = document.getElementById('btn-sound');
+  if(sBtn){ sBtn.textContent = soundEnabled ? '🔊 サウンド ON' : '🔇 サウンド OFF'; sBtn.classList.toggle('on', soundEnabled); }
+}
+
+/* ── タイトルへ戻る ── */
+function returnToStart(step = 1) {
   document.getElementById('win-overlay').classList.remove('show');
   document.getElementById('start-overlay').style.display = 'flex';
   G.over = false;
   G.ended = false;
+  goToStep(step);
 }
 
 // ============================================================
@@ -1043,7 +1294,8 @@ function log(text, type='s') {
   const d = document.createElement('div');
   d.className = `le le-${type}`; d.textContent = text;
   el.appendChild(d);
-  while(el.children.length > 3) el.removeChild(el.firstChild);
+  el.scrollTop = el.scrollHeight;
+  while(el.children.length > 13) el.removeChild(el.firstChild);
 }
 
 // ============================================================
@@ -1189,6 +1441,10 @@ function updateTurn() {
 // ============================================================
 function startGame() {
   if(!startGender) return;
+  saveToLocalStorage(); // 設定をlocalStorageに保存
+  localStorage.setItem('bf_sound', soundEnabled ? 'true' : 'false');
+  playSE('se-start-btn');
+  prevBGMState = null;
   document.getElementById('start-overlay').style.display = 'none';
   playBGM();
 
@@ -1216,9 +1472,6 @@ function startGame() {
   // 初期化
   G.turnIdx=0; G.over=false; G.ended=false; G.history=[]; G.turnCount=0; G.pendingAtkCardIdx=null;
 
-  // 履歴リセット
-  document.getElementById('hist-cards').innerHTML = '<div id="hist-empty">まだカードが使われていません</div>';
-
   // フィールドカード表示
   const fs = document.getElementById('field-slot');
   fs.innerHTML = cardHtml(G.field, true, null);
@@ -1235,6 +1488,11 @@ function startGame() {
   log('あなたのターンです', 'p');
 
   renderHands(); updateDeck(); updateScores(); updateTurn(); attachPreviewListeners();
+
+  // 挨拶ボイス：プレイヤー → CPU α → CPU β の順に再生
+  setTimeout(() => playSE(getVoiceId(0, 'greeting')), 600);
+  setTimeout(() => playSE(getVoiceId(1, 'greeting')), 2000);
+  setTimeout(() => playSE(getVoiceId(2, 'greeting')), 3400);
 }
 
 // ============================================================
@@ -1246,6 +1504,7 @@ function checkInstantWin() {
     const closest = getClosestField(G.players[i].stats);
     if(closest && closest.no === G.field.no) {
       G.over = true; // 勝利確定：追加操作を即時ブロック
+      playSE('se-match');
       // 顔をフラッシュ演出
       const cfg = PC[i];
       const faceEl = document.getElementById(cfg.faceBase+'-img');
@@ -1266,19 +1525,23 @@ function applyEffect(card, pIdx, targetPIdx) {
   const oldStats = G.players.map(pl => [...pl.stats]);
 
   if(card.type==='atk') {
+    playSE('se-atk');
+    playSE(getVoiceId(pIdx, 'atk'), 0.9);
     // targetPIdx が指定されていればそこに攻撃、なければ最も危険な相手
     const target = (targetPIdx !== undefined && targetPIdx !== null) ? targetPIdx : getMostDangerous(pIdx);
     G.players[target].stats = G.players[target].stats.map((v,i) => clamp(v + card.dv[i]));
     animPanel(target, oldStats[target], G.players[target].stats, true);
     flashFx('atk');
+    // プレイヤー男が攻撃を受けた場合のダメージボイス
+    if(target === 0 && G.players[0].gender === 'male') setTimeout(() => playSE('voice-pm-dmg', 0.9), 400);
     log(`${cfg.name}「${card.name}」→ ${PC[target].name}に攻撃！`, cfg.hcls);
   } else if(card.type==='def') {
+    playSE('se-def');
     G.players[pIdx].stats = G.players[pIdx].stats.map((v,i) => clamp(v + card.sv[i]));
     animPanel(pIdx, oldStats[pIdx], G.players[pIdx].stats);
     flashFx('def');
     log(`${cfg.name}「${card.name}」使用`, cfg.hcls);
   }
-  addHistory(card, pIdx);
   updateScores();
   updateBGM();
 }
@@ -1296,6 +1559,7 @@ function playCard(idx) {
   if(G.turnIdx!==0 || G.over) return;
   const card = G.players[0].hand[idx];
   if(!card) return;
+  playSE('se-click');
 
   if(card.type==='atk') {
     // 攻撃対象選択モーダルを表示
@@ -1332,7 +1596,8 @@ function executePlay(idx, targetPIdx) {
     G.players[0].hand.splice(idx, 1);
     applyEffect(card, 0, targetPIdx);
     if(checkInstantWin()) return;
-    if(G.deck.length>0){ G.players[0].hand.push(G.deck.pop()); log('ドロー','p'); }
+    if(G.deck.length>0){ G.players[0].hand.push(G.deck.pop()); playSE('se-draw'); log('ドロー','p'); }
+    if(G.deck.length===0) playSE('se-deck');
     updateDeck();
     G.turnIdx = 1; updateTurn(); renderHands();
     if(checkEnd()) return;
@@ -1384,7 +1649,8 @@ function cpuTurn() {
     pl.hand.splice(bestIdx, 1);
     applyEffect(card, pIdx, atkTarget);
     if(checkInstantWin()) return;
-    if(G.deck.length>0) pl.hand.push(G.deck.pop());
+    if(G.deck.length>0){ pl.hand.push(G.deck.pop()); playSE('se-draw'); }
+    if(G.deck.length===0) playSE('se-deck');
     updateDeck();
     if(checkEnd()) return;
     nextTurn();
@@ -1491,6 +1757,12 @@ function endGame(winnerIdx, reason) {
   G.over = true;
   G.ended = true;
   stopBGM();
+  if(winnerIdx===0) playSE('se-win');
+  else playSE('se-lose');
+  // 勝利ボイス（勝者）
+  setTimeout(() => playSE(getVoiceId(winnerIdx, 'win'), 0.9), 300);
+  // 敗北ボイス（プレイヤーが負けた場合）
+  if(winnerIdx !== 0) setTimeout(() => playSE(getVoiceId(0, 'lose'), 0.9), 1200);
   const cfg = PC[winnerIdx];
   const dists = G.players.map(pl => dist(pl.stats, G.field.sv));
   const sorted = [0,1,2].sort((a,b) => dists[a]-dists[b]);
@@ -1602,6 +1874,7 @@ function diagApplyResult() {
     setDiag(t, Math.max(1, Math.min(5, Math.round(sum / qs.length))));
   });
   closeDiagModal();
+  goToStep(5); // 診断完了 → 確認ステップへ
 }
 
 // ============================================================
@@ -1618,8 +1891,6 @@ window.addEventListener('resize', scaleGame);
 // ============================================================
 //  INIT
 // ============================================================
-buildDiagUI();
-updatePreview();
 scaleGame();
 // ============================================================
 //  BGM / SOUND
@@ -1627,22 +1898,40 @@ scaleGame();
 let soundEnabled = true;
 let bgmMuted = false;
 let currentBGMId = null;
+let prevBGMState = null;
 const BGM_IDS = ['bgm', 'bgm-bad', 'bgm-role'];
+
+function playSE(id, volume) {
+  if(!soundEnabled || bgmMuted) return;
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.currentTime = 0;
+  el.volume = volume ?? 0.7;
+  el.play().catch(() => {});
+}
+
+// キャラ番号(0=プレイヤー, 1=CPU α, 2=CPU β)とタイプからボイスIDを返す
+function getVoiceId(pIdx, type) {
+  const gender = G.players[pIdx].gender;
+  const prefix = (pIdx === 0)
+    ? (gender === 'male' ? 'pm' : 'pf')
+    : (gender === 'male' ? 'cm' : 'cf');
+  return `voice-${prefix}-${type}`;
+}
 
 function toggleSound() {
   soundEnabled = !soundEnabled;
   const btn = document.getElementById('btn-sound');
-  btn.textContent = soundEnabled ? '🔊 ON' : '🔇 OFF';
-  btn.classList.toggle('on', soundEnabled);
+  if(btn){ btn.textContent = soundEnabled ? '🔊 サウンド ON' : '🔇 サウンド OFF'; btn.classList.toggle('on', soundEnabled); }
 }
 
 function switchBGM(id) {
   if(currentBGMId === id) return;
-  BGM_IDS.forEach(bid => {
-    const el = document.getElementById(bid);
-    el.pause();
-    el.currentTime = 0;
-  });
+  // 現在のBGMだけ停止（全BGMを一括停止すると直後のplay()がAbortErrorになる場合がある）
+  if(currentBGMId) {
+    const oldEl = document.getElementById(currentBGMId);
+    if(oldEl) { oldEl.pause(); oldEl.currentTime = 0; }
+  }
   currentBGMId = id;
   if(!soundEnabled) return;
   const el = document.getElementById(id);
@@ -1670,13 +1959,20 @@ function stopBGM() {
 function updateBGM() {
   if(!G.players[0]) return;
   const stateKey = getStateKey(G.players[0].stats);
+  let newBGMId;
   if(isInBadState(0)) {
-    switchBGM('bgm-bad');
+    newBGMId = 'bgm-bad';
   } else if(stateKey === 'ロールモデル') {
-    switchBGM('bgm-role');
+    newBGMId = 'bgm-role';
   } else {
-    switchBGM('bgm');
+    newBGMId = 'bgm';
   }
+  if(newBGMId !== prevBGMState) {
+    if(newBGMId === 'bgm-bad') playSE('se-bad');
+    else if(newBGMId === 'bgm-role') playSE('se-role');
+    prevBGMState = newBGMId;
+  }
+  switchBGM(newBGMId);
 }
 
 function toggleMute() {
@@ -1685,7 +1981,22 @@ function toggleMute() {
   document.getElementById('mute-btn').textContent = bgmMuted ? '🔇' : '🔊';
 }
 
-selectDifficulty('easy');
+// ── localStorage から設定を復元してUIに反映 ──
+restoreFromLocalStorage();
+// 性別・難易度ボタンに保存値を反映
+if(startGender) {
+  const sm = document.getElementById('sel-male');   if(sm) sm.classList.toggle('sel-active', startGender==='male');
+  const sf = document.getElementById('sel-female'); if(sf) sf.classList.toggle('sel-active', startGender==='female');
+}
+['easy','normal','hard'].forEach(k => {
+  const el = document.getElementById('sel-'+k);
+  if(el) el.classList.toggle('sel-active', k===startDifficulty);
+});
+// サウンドボタン状態の初期化
+const initSndBtn = document.getElementById('btn-sound');
+if(initSndBtn){ initSndBtn.textContent = soundEnabled ? '🔊 サウンド ON' : '🔇 サウンド OFF'; initSndBtn.classList.toggle('on', soundEnabled); }
+// ステップインジケーター更新（step-1がデフォルトでactive）
+updateStepIndicator();
 </script>
 </body>
 </html>
