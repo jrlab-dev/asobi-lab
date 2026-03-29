@@ -181,6 +181,23 @@
             background: linear-gradient(135deg, #1a0a1e 0%, #2a0d35 50%, #0d0510 100%);
         }
 
+        .card-thumb-uranai {
+            background: linear-gradient(135deg, #1a0a28 0%, #2d0a3e 50%, #0d0518 100%);
+        }
+
+        .card-uranai .card-btn {
+            color: var(--magenta);
+            border-color: rgba(255, 0, 204, 0.4);
+        }
+
+        .card-uranai:hover .card-btn {
+            background: rgba(255, 0, 204, 0.1);
+        }
+
+        .card-thumb-uranai ~ .card-body .card-tag {
+            color: var(--magenta);
+        }
+
         /* サムネ装飾 */
         .thumb-hex {
             position: absolute;
@@ -344,6 +361,20 @@
                     <h2 class="card-title">ビッグファイブ<br>カードゲーム</h2>
                     <p class="card-desc">心理学の「ビッグファイブ理論」をベースにした3人対戦カードゲーム。ATKカードで相手を攻撃し、DEFカードで自分を強化して、最高の自分＝ロールモデルを目指せ！</p>
                     <span class="card-btn">▶ PLAY NOW</span>
+                </div>
+            </a>
+
+            <!-- 星座×ビッグファイブ相性診断 -->
+            <a class="card card-uranai" href="uranai/index.html">
+                <div class="card-thumb card-thumb-uranai">
+                    <div class="thumb-hex"></div>
+                    <span class="thumb-icon" style="filter: drop-shadow(0 0 16px rgba(255, 0, 204, 0.7));">✨</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-tag">Compatibility</p>
+                    <h2 class="card-title">星座×ビッグファイブ<br>相性診断</h2>
+                    <p class="card-desc">心理学の「ビッグファイブ理論」で星座の相性を科学的に解析。あなたと気になるあの人、本当の相性を5つの因子で数値化します。</p>
+                    <span class="card-btn">▶ DIAGNOSE</span>
                 </div>
             </a>
 
