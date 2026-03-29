@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>OGP画像ジェネレーター</title>
+<style>
+  body { font-family: sans-serif; background: #f0f0f0; display: flex; flex-direction: column; align-items: center; padding: 40px; gap: 20px; }
+  canvas { border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.15); max-width: 100%; }
+  button { background: #7c3aed; color: #fff; border: none; padding: 14px 40px; border-radius: 8px; font-size: 16px; cursor: pointer; }
+  button:hover { background: #6d28d9; }
+  p { color: #555; font-size: 14px; }
+</style>
+</head>
+<body>
+<h2>OGP画像ジェネレーター（1200×630px）</h2>
+<canvas id="c" width="1200" height="630"></canvas>
+<p>↓ ボタンを押すと <strong>ogp.png</strong> として保存されます。保存後このフォルダに置いてください。</p>
+<button onclick="download()">ogp.png をダウンロード</button>
+
+<script>
+const c   = document.getElementById('c');
+const ctx = c.getContext('2d');
+const W = 1200, H = 630;
+
+function draw() {
+    // 背景グラデーション
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0,   '#f5f0ff');
+    bg.addColorStop(0.5, '#ede8ff');
+    bg.addColorStop(1,   '#fce7f3');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // スポットライト（左上）
+    const s1 = ctx.createRadialGradient(360, 126, 0, 360, 126, 320);
+    s1.addColorStop(0, 'rgba(196,181,253,0.3)');
+    s1.addColorStop(1, 'rgba(196,181,253,0)');
+    ctx.fillStyle = s1;
+    ctx.fillRect(0, 0, W, H);
+
+    // スポットライト（右下）
+    const s2 = ctx.createRadialGradient(960, 472, 0, 960, 472, 260);
+    s2.addColorStop(0, 'rgba(251,207,232,0.28)');
+    s2.addColorStop(1, 'rgba(251,207,232,0)');
+    ctx.fillStyle = s2;
+    ctx.fillRect(0, 0, W, H);
+
+    // 上部グラデーションライン
+    const topBar = ctx.createLinearGradient(0, 0, W, 0);
+    topBar.addColorStop(0,   '#7c3aed');
+    topBar.addColorStop(0.5, '#a855f7');
+    topBar.addColorStop(1,   '#db2777');
+    ctx.fillStyle = topBar;
+    ctx.fillRect(0, 0, W, 5);
+
+    // 中央パネル
+    roundRect(ctx, 100, 100, 1000, 430, 24);
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(196,181,253,0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // サブテキスト
+    ctx.font = '500 17px Georgia, serif';
+    ctx.fillStyle = 'rgba(147,51,234,0.55)';
+    ctx.letterSpacing = '8px';
+    ctx.textAlign = 'center';
+    ctx.fillText('PSYCHOLOGY  ×  ASTROLOGY', W/2, 178);
+
+    // 区切り線
+    ctx.strokeStyle = 'rgba(196,181,253,0.7)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(475,197); ctx.lineTo(555,197); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(645,197); ctx.lineTo(725,197); ctx.stroke();
+    ctx.font = '14px serif';
+    ctx.fillStyle = 'rgba(168,85,247,0.5)';
+    ctx.fillText('✦', W/2, 202);
+
+    // メインタイトル（グラデーション）
+    const titleGrad = ctx.createLinearGradient(300, 0, 900, 0);
+    titleGrad.addColorStop(0,   '#7c3aed');
+    titleGrad.addColorStop(0.5, '#a855f7');
+    titleGrad.addColorStop(1,   '#db2777');
+
+    ctx.font = 'bold 60px Georgia, "Times New Roman", serif';
+    ctx.fillStyle = titleGrad;
+    ctx.shadowColor = 'rgba(124,58,237,0.3)';
+    ctx.shadowBlur = 16;
+    ctx.fillText('星座 × ビッグファイブ', W/2, 278);
+    ctx.shadowBlur = 0;
+
+    ctx.font = 'bold 52px Georgia, "Times New Roman", serif';
+    ctx.fillStyle = '#2e1065';
+    ctx.fillText('相性診断', W/2, 352);
+
+    // 説明文
+    ctx.font = '20px "Hiragino Kaku Gothic Pro", Meiryo, sans-serif';
+    ctx.fillStyle = 'rgba(107,33,168,0.6)';
+    ctx.fillText('占いじゃなく、心理学で分析する相性診断', W/2, 416);
+
+    // 星座シンボル（装飾）
+    ctx.font = '72px serif';
+    ctx.fillStyle = 'rgba(124,58,237,0.13)';
+    ctx.fillText('♈', 165, 320);
+    ctx.fillText('♎', 168, 400);
+    ctx.fillStyle = 'rgba(219,39,119,0.13)';
+    ctx.fillText('♏', 1015, 320);
+    ctx.fillStyle = 'rgba(168,85,247,0.12)';
+    ctx.fillText('♊', 1018, 400);
+
+    // 装飾の星
+    ctx.font = '20px serif';
+    ctx.fillStyle = 'rgba(168,85,247,0.22)';
+    ctx.fillText('✦', 80, 125);
+    ctx.fillText('✧', 195, 62);
+    ctx.fillStyle = 'rgba(219,39,119,0.2)';
+    ctx.fillText('✦', 1052, 105);
+    ctx.fillText('✦', 1080, 528);
+    ctx.fillStyle = 'rgba(168,85,247,0.18)';
+    ctx.fillText('✧', 155, 548);
+
+    // フッター
+    ctx.font = '15px Georgia, serif';
+    ctx.fillStyle = 'rgba(147,51,234,0.35)';
+    ctx.letterSpacing = '4px';
+    ctx.fillText('ASOBI  LAB', W/2, 583);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+function download() {
+    const a = document.createElement('a');
+    a.download = 'ogp.png';
+    a.href = c.toDataURL('image/png');
+    a.click();
+}
+
+draw();
+</script>
+</body>
+</html>

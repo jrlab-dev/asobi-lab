@@ -6,6 +6,18 @@
     <title>星座×ビッグファイブ 相性診断 | あそびラボ</title>
     <meta name="description" content="心理学×占い。あなたと気になるあの人の星座から、ビッグファイブ理論で相性を科学的に分析します。無料・ブラウザで即診断。">
     <link rel="icon" type="image/png" href="../favicon.png">
+    <!-- OGP -->
+    <meta property="og:type"        content="website">
+    <meta property="og:title"       content="星座×ビッグファイブ 相性診断｜あそびラボ">
+    <meta property="og:description" content="占いじゃなく、心理学で分析する相性診断。星座を選ぶだけで開放性・協調性など5項目をスコア化。無料・ブラウザで即診断。">
+    <meta property="og:url"         content="https://jrlab-dev.github.io/asobi-lab/uranai/">
+    <meta property="og:image"       content="https://jrlab-dev.github.io/asobi-lab/uranai/ogp.svg">
+    <meta property="og:site_name"   content="あそびラボ">
+    <meta property="og:locale"      content="ja_JP">
+    <meta name="twitter:card"       content="summary_large_image">
+    <meta name="twitter:title"      content="星座×ビッグファイブ 相性診断｜あそびラボ">
+    <meta name="twitter:description" content="占いじゃなく、心理学で分析する相性診断。星座を選ぶだけで5項目をスコア化。無料・即診断。">
+    <meta name="twitter:image"      content="https://jrlab-dev.github.io/asobi-lab/uranai/ogp.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
@@ -893,7 +905,7 @@
             const z1    = ZODIAC[selectedYou], z2 = ZODIAC[selectedPartner];
             const score = document.getElementById('res-score').textContent;
             const title = document.getElementById('res-title').textContent;
-            const text  = `${z1.sym}${z1.name} × ${z2.sym}${z2.name}\n\n相性スコア：${score}点\n「${title}」\n\n#あそびラボ #相性診断 #ビッグファイブ`;
+            const text  = `${z1.sym}${z1.name} × ${z2.sym}${z2.name} の相性スコアは【${score}点】✦\n「${title}」\n\n#星座相性 #相性診断 #ビッグファイブ占い`;
             const url   = 'https://jrlab-dev.github.io/asobi-lab/uranai/';
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
         });
