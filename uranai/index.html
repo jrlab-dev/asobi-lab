@@ -7,37 +7,33 @@
     <meta name="description" content="心理学×占い。あなたと気になるあの人の星座から、ビッグファイブ理論で相性を科学的に分析します。無料・ブラウザで即診断。">
     <link rel="icon" type="image/png" href="../favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold:    #d4a843;
-            --gold2:   #f0c96e;
-            --purple:  #9b72cf;
-            --purple2: #c4a0f0;
-            --rose:    #e8a0b0;
-            --dark:    #080618;
-            --dark2:   #100d28;
-            --panel:   rgba(18, 10, 45, 0.85);
-            --panel2:  rgba(30, 18, 60, 0.7);
-            --border:  rgba(212, 168, 67, 0.2);
+            --purple:  #7c3aed;
+            --purple2: #a855f7;
+            --purple3: #ddd6fe;
+            --rose:    #db2777;
+            --rose2:   #f9a8d4;
+            --text:    #2e1065;
+            --text2:   #6b21a8;
+            --text3:   #9333ea;
+            --bg:      #faf7ff;
+            --bg2:     #f3eeff;
+            --panel:   rgba(255,255,255,0.82);
+            --panel2:  rgba(248,245,255,0.9);
+            --border:  rgba(139, 92, 246, 0.18);
+            --shadow:  0 4px 24px rgba(109, 40, 217, 0.09);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: var(--dark);
-            color: #fff;
+            background: var(--bg);
+            color: var(--text);
             font-family: 'Noto Sans JP', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
-        }
-
-        /* 星空背景 */
-        #stars-canvas {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
         }
 
         /* 背景グラデーション */
@@ -46,11 +42,36 @@
             position: fixed;
             inset: 0;
             background:
-                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(80, 40, 140, 0.35) 0%, transparent 70%),
-                radial-gradient(ellipse 60% 40% at 20% 80%, rgba(40, 20, 80, 0.3) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 30% at 80% 60%, rgba(100, 50, 120, 0.2) 0%, transparent 50%);
+                radial-gradient(ellipse 90% 60% at 50% -10%, rgba(167, 139, 250, 0.22) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 10% 90%, rgba(216, 180, 254, 0.18) 0%, transparent 55%),
+                radial-gradient(ellipse 40% 35% at 90% 70%, rgba(249, 168, 212, 0.14) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
+        }
+
+        /* 浮遊する星の装飾 */
+        .float-stars {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .float-star {
+            position: absolute;
+            color: var(--purple2);
+            opacity: 0;
+            animation: floatUp linear infinite;
+            font-size: 12px;
+            user-select: none;
+        }
+
+        @keyframes floatUp {
+            0%   { opacity: 0;    transform: translateY(0)   rotate(0deg);   }
+            10%  { opacity: 0.25; }
+            90%  { opacity: 0.1;  }
+            100% { opacity: 0;    transform: translateY(-80vh) rotate(360deg); }
         }
 
         /* 戻るボタン */
@@ -60,15 +81,16 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: rgba(212, 168, 67, 0.5);
+            color: var(--text3);
+            opacity: 0.55;
             text-decoration: none;
             font-family: 'Cinzel', serif;
             font-size: 10px;
             letter-spacing: 2px;
             padding: 20px 24px 0;
-            transition: color 0.2s;
+            transition: opacity 0.2s;
         }
-        .back-link:hover { color: var(--gold); }
+        .back-link:hover { opacity: 1; }
 
         /* ヘッダー */
         header {
@@ -79,18 +101,18 @@
         }
 
         .header-icon {
-            font-size: 36px;
+            font-size: 38px;
             margin-bottom: 16px;
             display: block;
-            filter: drop-shadow(0 0 16px rgba(212, 168, 67, 0.6));
+            filter: drop-shadow(0 2px 12px rgba(124, 58, 237, 0.35));
         }
 
         .logo-sub {
             font-family: 'Cinzel', serif;
             font-size: 10px;
             letter-spacing: 6px;
-            color: var(--gold);
-            opacity: 0.7;
+            color: var(--text3);
+            opacity: 0.65;
             margin-bottom: 14px;
             text-transform: uppercase;
         }
@@ -99,14 +121,13 @@
             font-family: 'Cinzel', serif;
             font-size: clamp(22px, 5vw, 40px);
             font-weight: 700;
-            letter-spacing: 0.08em;
-            color: #fff;
+            letter-spacing: 0.06em;
+            color: var(--text);
             line-height: 1.3;
-            text-shadow: 0 0 40px rgba(212, 168, 67, 0.4);
         }
 
         .logo-main span {
-            background: linear-gradient(90deg, var(--gold), var(--gold2), var(--gold));
+            background: linear-gradient(135deg, var(--purple), var(--purple2), var(--rose));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -116,8 +137,8 @@
             font-family: 'Cinzel', serif;
             font-size: 10px;
             letter-spacing: 8px;
-            color: var(--gold);
-            opacity: 0.35;
+            color: var(--purple);
+            opacity: 0.3;
             margin-top: 8px;
         }
 
@@ -133,18 +154,18 @@
         .ornament-line {
             flex: 1;
             height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-            opacity: 0.4;
+            background: linear-gradient(90deg, transparent, var(--purple3), transparent);
         }
 
-        .ornament-star { color: var(--gold); font-size: 12px; opacity: 0.6; }
+        .ornament-star { color: var(--purple2); font-size: 12px; opacity: 0.7; }
 
         .tagline {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 14px;
+            font-size: 15px;
             font-style: italic;
-            color: rgba(255,255,255,0.4);
-            letter-spacing: 1px;
+            color: var(--text2);
+            opacity: 0.6;
+            letter-spacing: 0.5px;
         }
 
         /* メイン */
@@ -160,8 +181,8 @@
             font-family: 'Cinzel', serif;
             font-size: 10px;
             letter-spacing: 5px;
-            color: var(--gold);
-            opacity: 0.55;
+            color: var(--purple);
+            opacity: 0.5;
             text-align: center;
             margin-bottom: 28px;
             text-transform: uppercase;
@@ -178,8 +199,9 @@
         .selector-panel {
             background: var(--panel);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 22px 16px;
+            box-shadow: var(--shadow);
             backdrop-filter: blur(12px);
         }
 
@@ -187,7 +209,7 @@
             font-family: 'Cinzel', serif;
             font-size: 10px;
             letter-spacing: 4px;
-            color: var(--gold);
+            color: var(--text3);
             opacity: 0.7;
             margin-bottom: 16px;
             text-align: center;
@@ -206,9 +228,9 @@
         }
 
         .selected-sym  { font-size: 30px; line-height: 1; }
-        .selected-name { font-family: 'Cinzel', serif; font-size: 13px; color: #fff; letter-spacing: 2px; }
-        .selected-period { font-size: 10px; color: rgba(255,255,255,0.3); }
-        .no-selection  { font-size: 11px; color: rgba(255,255,255,0.2); letter-spacing: 1px; }
+        .selected-name { font-family: 'Cinzel', serif; font-size: 13px; color: var(--text); letter-spacing: 2px; }
+        .selected-period { font-size: 10px; color: var(--text2); opacity: 0.5; }
+        .no-selection  { font-size: 11px; color: rgba(109,40,217,0.25); letter-spacing: 1px; }
 
         /* 星座グリッド */
         .zodiac-grid {
@@ -218,8 +240,8 @@
         }
 
         .z-btn {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(212, 168, 67, 0.1);
+            background: rgba(139, 92, 246, 0.04);
+            border: 1px solid rgba(139, 92, 246, 0.12);
             border-radius: 8px;
             padding: 8px 4px;
             cursor: pointer;
@@ -232,19 +254,19 @@
         }
 
         .z-btn:hover {
-            border-color: rgba(212, 168, 67, 0.4);
-            background: rgba(212, 168, 67, 0.07);
+            border-color: rgba(139, 92, 246, 0.4);
+            background: rgba(139, 92, 246, 0.09);
         }
 
         .z-btn.selected {
-            border-color: var(--gold);
-            background: rgba(212, 168, 67, 0.14);
-            box-shadow: 0 0 10px rgba(212, 168, 67, 0.25);
+            border-color: var(--purple);
+            background: rgba(124, 58, 237, 0.13);
+            box-shadow: 0 0 10px rgba(124, 58, 237, 0.2);
         }
 
         .z-sym  { font-size: 18px; line-height: 1; }
-        .z-name { font-size: 9px; color: rgba(255,255,255,0.45); }
-        .z-btn.selected .z-name { color: var(--gold2); }
+        .z-name { font-size: 9px; color: rgba(46,16,101,0.45); }
+        .z-btn.selected .z-name { color: var(--purple2); font-weight: 500; }
 
         /* 診断ボタン */
         .diagnose-wrap { text-align: center; margin-bottom: 44px; }
@@ -253,14 +275,14 @@
             font-family: 'Cinzel', serif;
             font-size: 12px;
             letter-spacing: 5px;
-            color: var(--dark);
-            background: linear-gradient(135deg, var(--gold), var(--gold2), var(--gold));
+            color: #fff;
+            background: linear-gradient(135deg, var(--purple), var(--purple2));
             border: none;
             padding: 16px 52px;
             border-radius: 40px;
             cursor: pointer;
             transition: all 0.3s;
-            opacity: 0.3;
+            opacity: 0.25;
             pointer-events: none;
             text-transform: uppercase;
         }
@@ -268,12 +290,12 @@
         .btn-diagnose.active {
             opacity: 1;
             pointer-events: all;
-            box-shadow: 0 4px 30px rgba(212, 168, 67, 0.4);
+            box-shadow: 0 4px 30px rgba(124, 58, 237, 0.35);
         }
 
         .btn-diagnose.active:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 40px rgba(212, 168, 67, 0.55);
+            box-shadow: 0 8px 40px rgba(124, 58, 237, 0.5);
         }
 
         /* 結果エリア */
@@ -291,13 +313,13 @@
 
         /* 結果ヘッダー */
         .result-header {
-            background: var(--panel);
+            background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(245,240,255,0.92));
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 36px 24px 32px;
             text-align: center;
             margin-bottom: 20px;
-            backdrop-filter: blur(14px);
+            box-shadow: var(--shadow), 0 0 0 4px rgba(167,139,250,0.08);
             position: relative;
             overflow: hidden;
         }
@@ -306,16 +328,9 @@
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gold), var(--gold2), transparent);
-        }
-
-        .result-header::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(212, 168, 67, 0.06), transparent);
-            pointer-events: none;
+            height: 3px;
+            background: linear-gradient(90deg, var(--purple), var(--purple2), var(--rose));
+            border-radius: 20px 20px 0 0;
         }
 
         .result-signs {
@@ -331,17 +346,17 @@
         .result-sign-sym {
             font-size: 44px;
             line-height: 1;
-            filter: drop-shadow(0 0 14px rgba(212, 168, 67, 0.5));
+            filter: drop-shadow(0 2px 8px rgba(124, 58, 237, 0.25));
         }
 
         .result-sign-name {
             font-family: 'Cinzel', serif;
             font-size: 13px;
-            color: #fff;
+            color: var(--text);
             letter-spacing: 2px;
         }
 
-        .result-sign-key { font-size: 10px; color: rgba(255,255,255,0.35); }
+        .result-sign-key { font-size: 10px; color: var(--text2); opacity: 0.5; }
 
         .result-connector {
             display: flex;
@@ -353,8 +368,8 @@
         .connector-star { font-size: 22px; animation: twinkle 2s ease-in-out infinite; }
 
         @keyframes twinkle {
-            0%, 100% { opacity: 0.6; transform: scale(1);   filter: drop-shadow(0 0 4px rgba(212,168,67,0.4)); }
-            50%       { opacity: 1;   transform: scale(1.2); filter: drop-shadow(0 0 12px rgba(212,168,67,0.8)); }
+            0%, 100% { opacity: 0.5; transform: scale(1);   filter: drop-shadow(0 0 4px rgba(124,58,237,0.3)); }
+            50%       { opacity: 1;   transform: scale(1.2); filter: drop-shadow(0 0 10px rgba(168,85,247,0.6)); }
         }
 
         /* スコア表示 */
@@ -363,18 +378,18 @@
             font-size: clamp(64px, 14vw, 88px);
             font-weight: 700;
             line-height: 1;
-            background: linear-gradient(135deg, var(--gold), var(--gold2), #fff);
+            background: linear-gradient(135deg, var(--purple), var(--purple2), var(--rose));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            filter: drop-shadow(0 0 24px rgba(212, 168, 67, 0.5));
         }
 
         .score-unit {
             font-family: 'Cinzel', serif;
             font-size: 10px;
             letter-spacing: 5px;
-            color: rgba(255,255,255,0.3);
+            color: var(--text2);
+            opacity: 0.35;
             margin-top: 4px;
         }
 
@@ -382,7 +397,7 @@
             font-family: 'Cormorant Garamond', serif;
             font-size: clamp(18px, 4vw, 26px);
             font-weight: 600;
-            color: var(--gold2);
+            color: var(--purple);
             margin: 14px 0 10px;
             letter-spacing: 0.05em;
         }
@@ -390,7 +405,8 @@
         .score-desc {
             font-size: 13px;
             line-height: 1.9;
-            color: rgba(255,255,255,0.5);
+            color: var(--text2);
+            opacity: 0.7;
             max-width: 480px;
             margin: 0 auto;
         }
@@ -402,15 +418,15 @@
             border-radius: 16px;
             padding: 28px 26px;
             margin-bottom: 20px;
-            backdrop-filter: blur(12px);
+            box-shadow: var(--shadow);
         }
 
         .factors-title {
             font-family: 'Cinzel', serif;
             font-size: 10px;
             letter-spacing: 5px;
-            color: var(--gold);
-            opacity: 0.65;
+            color: var(--purple);
+            opacity: 0.55;
             margin-bottom: 24px;
             text-transform: uppercase;
         }
@@ -425,19 +441,19 @@
             margin-bottom: 9px;
         }
 
-        .factor-name { font-size: 13px; font-weight: 700; color: #fff; }
-        .factor-sub  { font-size: 10px; color: rgba(255,255,255,0.3); margin-left: 7px; }
+        .factor-name { font-size: 13px; font-weight: 700; color: var(--text); }
+        .factor-sub  { font-size: 10px; color: var(--text2); opacity: 0.5; margin-left: 7px; }
 
         .factor-score {
             font-family: 'Cinzel', serif;
             font-size: 15px;
             font-weight: 700;
-            color: var(--gold);
+            color: var(--purple);
         }
 
         .factor-bar-bg {
-            height: 5px;
-            background: rgba(255,255,255,0.06);
+            height: 6px;
+            background: rgba(139, 92, 246, 0.08);
             border-radius: 10px;
             overflow: hidden;
         }
@@ -449,15 +465,16 @@
             transition: width 1.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .factor-bar-fill.openness      { background: linear-gradient(90deg, #7c3aed, #c084fc); }
-        .factor-bar-fill.conscientious { background: linear-gradient(90deg, #0369a1, #38bdf8); }
-        .factor-bar-fill.extraversion  { background: linear-gradient(90deg, #b45309, var(--gold2)); }
-        .factor-bar-fill.agreeableness { background: linear-gradient(90deg, #be185d, #f9a8d4); }
-        .factor-bar-fill.stability     { background: linear-gradient(90deg, #166534, #86efac); }
+        .factor-bar-fill.openness      { background: linear-gradient(90deg, #7c3aed, #a855f7); }
+        .factor-bar-fill.conscientious { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+        .factor-bar-fill.extraversion  { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+        .factor-bar-fill.agreeableness { background: linear-gradient(90deg, #db2777, #f9a8d4); }
+        .factor-bar-fill.stability     { background: linear-gradient(90deg, #059669, #6ee7b7); }
 
         .factor-comment {
             font-size: 11px;
-            color: rgba(255,255,255,0.3);
+            color: var(--text2);
+            opacity: 0.55;
             margin-top: 6px;
             font-style: italic;
         }
@@ -465,10 +482,11 @@
         /* 科学的解説 */
         .science-panel {
             background: var(--panel2);
-            border: 1px solid rgba(212, 168, 67, 0.1);
+            border: 1px solid var(--border);
             border-radius: 12px;
             margin-bottom: 20px;
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .science-toggle {
@@ -476,7 +494,8 @@
             padding: 16px 22px;
             background: none;
             border: none;
-            color: rgba(255,255,255,0.35);
+            color: var(--text2);
+            opacity: 0.5;
             font-family: 'Cinzel', serif;
             font-size: 9px;
             letter-spacing: 3px;
@@ -485,10 +504,10 @@
             justify-content: space-between;
             align-items: center;
             text-transform: uppercase;
-            transition: color 0.2s;
+            transition: opacity 0.2s;
         }
 
-        .science-toggle:hover { color: var(--gold); }
+        .science-toggle:hover { opacity: 1; }
 
         .science-body { display: none; padding: 0 22px 22px; }
         .science-body.open { display: block; }
@@ -496,7 +515,8 @@
         .science-body p {
             font-size: 12px;
             line-height: 2;
-            color: rgba(255,255,255,0.38);
+            color: var(--text2);
+            opacity: 0.65;
             margin-bottom: 8px;
         }
 
@@ -523,7 +543,7 @@
         .btn-share:hover {
             background: #1a8cd8;
             transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(29, 155, 240, 0.4);
+            box-shadow: 0 6px 24px rgba(29, 155, 240, 0.35);
         }
 
         /* もう一度 */
@@ -533,9 +553,10 @@
             font-family: 'Cinzel', serif;
             font-size: 9px;
             letter-spacing: 3px;
-            color: rgba(255,255,255,0.25);
+            color: var(--text2);
+            opacity: 0.35;
             background: none;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(124, 58, 237, 0.18);
             padding: 10px 24px;
             border-radius: 40px;
             cursor: pointer;
@@ -544,8 +565,8 @@
         }
 
         .btn-retry:hover {
-            color: rgba(255,255,255,0.55);
-            border-color: rgba(255,255,255,0.25);
+            opacity: 0.75;
+            border-color: rgba(124, 58, 237, 0.4);
         }
 
         /* フッター */
@@ -554,14 +575,15 @@
             z-index: 10;
             text-align: center;
             padding: 32px 20px;
-            border-top: 1px solid rgba(212, 168, 67, 0.08);
+            border-top: 1px solid rgba(139, 92, 246, 0.1);
         }
 
         .footer-text {
             font-family: 'Cinzel', serif;
             font-size: 9px;
             letter-spacing: 4px;
-            color: rgba(255,255,255,0.12);
+            color: var(--text2);
+            opacity: 0.2;
             text-transform: uppercase;
         }
 
@@ -576,7 +598,7 @@
 </head>
 <body>
 
-    <canvas id="stars-canvas"></canvas>
+    <div class="float-stars" id="float-stars"></div>
 
     <a class="back-link" href="../index.html">← Asobi Lab</a>
 
@@ -724,50 +746,21 @@
     </footer>
 
     <script>
-        // 星空アニメーション
+        // 浮遊する星の装飾
         (function() {
-            const canvas = document.getElementById('stars-canvas');
-            const ctx    = canvas.getContext('2d');
-            let stars    = [];
-
-            function resize() {
-                canvas.width  = window.innerWidth;
-                canvas.height = window.innerHeight;
+            const container = document.getElementById('float-stars');
+            const symbols = ['✦','✧','⋆','✵','✴','·','⁕'];
+            for (let i = 0; i < 28; i++) {
+                const el = document.createElement('span');
+                el.className = 'float-star';
+                el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                el.style.left     = Math.random() * 100 + 'vw';
+                el.style.top      = Math.random() * 100 + 'vh';
+                el.style.fontSize = (Math.random() * 10 + 6) + 'px';
+                el.style.animationDuration  = (Math.random() * 18 + 12) + 's';
+                el.style.animationDelay     = (Math.random() * 12) + 's';
+                container.appendChild(el);
             }
-
-            function initStars() {
-                stars = [];
-                const count = Math.floor((canvas.width * canvas.height) / 6000);
-                for (let i = 0; i < count; i++) {
-                    stars.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        r: Math.random() * 1.4 + 0.2,
-                        o: Math.random() * 0.6 + 0.1,
-                        speed: Math.random() * 0.004 + 0.001,
-                        phase: Math.random() * Math.PI * 2,
-                    });
-                }
-            }
-
-            let t = 0;
-            function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                t += 0.01;
-                stars.forEach(s => {
-                    const opacity = s.o * (0.6 + 0.4 * Math.sin(t * s.speed * 100 + s.phase));
-                    ctx.beginPath();
-                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 245, 220, ${opacity})`;
-                    ctx.fill();
-                });
-                requestAnimationFrame(draw);
-            }
-
-            resize();
-            initStars();
-            draw();
-            window.addEventListener('resize', () => { resize(); initStars(); });
         })();
 
         // =====================================
