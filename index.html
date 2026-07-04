@@ -4,398 +4,308 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>あそびラボ | ASOBI LAB</title>
+    <meta name="description" content="あそびラボ — つくって、あそんで、ためしてみる。無料で遊べるブラウザゲームと診断の小さな実験室。">
     <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=RocknRoll+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DotGothic16&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
-
         :root {
-            --purple: #8b5cf6;
-            --blue: #3b82f6;
-            --amber: #f59e0b;
-            --rose: #f43f5e;
-            --bg: #0a0e27;
-            --panel: rgba(26, 10, 62, 0.45);
-            --border: rgba(139, 92, 246, 0.2);
+            --paper: #FBF9F2;
+            --grid: rgba(96, 134, 189, 0.14);
+            --ink: #2B2A33;
+            --ink-soft: rgba(43, 42, 51, 0.62);
+            --red: #E8503A;
+            --green: #2E9E5B;
+            --green-deep: #20713F;
+            --purple: #7A5AE0;
+            --purple-deep: #55389F;
+            --night: #384B8C;
+            --night-deep: #263562;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        html { -webkit-text-size-adjust: 100%; }
+
         body {
-            background: var(--bg);
-            color: #fff;
-            font-family: 'Noto Sans JP', sans-serif;
+            font-family: 'Zen Kaku Gothic New', sans-serif;
+            color: var(--ink);
+            background-color: var(--paper);
+            background-image:
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: 26px 26px;
             min-height: 100vh;
-            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* --- 星雲背景 --- */
-        .bg-nebula {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            background:
-                radial-gradient(ellipse 60% 50% at 15% 20%, rgba(139,92,246,0.15) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 40% at 85% 15%, rgba(59,130,246,0.12) 0%, transparent 70%),
-                radial-gradient(ellipse 70% 40% at 50% 70%, rgba(139,92,246,0.08) 0%, transparent 70%),
-                radial-gradient(ellipse 40% 50% at 90% 85%, rgba(59,130,246,0.06) 0%, transparent 70%);
-            animation: nebula-drift 25s ease-in-out infinite alternate;
-        }
-        @keyframes nebula-drift {
-            0% { transform: scale(1) translate(0, 0); }
-            25% { transform: scale(1.08) translate(2%, -1%); }
-            50% { transform: scale(1.04) translate(-2%, 2%); }
-            75% { transform: scale(1.1) translate(1%, 1%); }
-            100% { transform: scale(1) translate(-1%, -2%); }
-        }
-
-        .bg-stars {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            animation: twinkle 4s ease-in-out infinite alternate;
-        }
-        @keyframes twinkle {
-            0% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
-            100% { opacity: 0.5; transform: scale(1); }
-        }
-
-        /* --- ヘッダー --- */
+        /* ---------- ヘッダー ---------- */
         header {
-            position: relative;
-            z-index: 10;
             text-align: center;
-            padding: 60px 20px 40px;
+            padding: 72px 20px 12px;
         }
 
-        .logo-sub {
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 6px;
-            color: var(--purple);
-            opacity: 0.8;
-            margin-bottom: 12px;
+        .eyebrow {
+            font-family: 'DotGothic16', monospace;
+            font-size: 13px;
+            letter-spacing: 0.5em;
+            text-indent: 0.5em;
+            color: var(--ink-soft);
+            margin-bottom: 18px;
         }
 
-        .logo-main {
-            font-family: 'Noto Sans JP', sans-serif;
-            font-size: clamp(40px, 8vw, 80px);
-            font-weight: 900;
-            letter-spacing: 0.1em;
-            background: linear-gradient(135deg, #fff 0%, var(--purple) 50%, var(--blue) 100%);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: gradient-shift 6s ease-in-out infinite;
-            line-height: 1;
-        }
-        @keyframes gradient-shift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+        .logo {
+            font-family: 'RocknRoll One', sans-serif;
+            font-weight: 400;
+            font-size: clamp(44px, 9vw, 76px);
+            line-height: 1.15;
+            letter-spacing: 0.04em;
         }
 
-        .logo-en {
-            font-size: clamp(12px, 2vw, 18px);
-            font-weight: 300;
-            letter-spacing: 8px;
-            color: var(--purple);
-            opacity: 0.5;
-            margin-top: 8px;
-        }
-
-        .header-line {
-            width: 200px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--purple), transparent);
-            margin: 24px auto 0;
+        .logo .labo {
+            text-decoration: underline wavy var(--red) 3px;
+            text-decoration-skip-ink: none;
+            text-underline-offset: 10px;
         }
 
         .tagline {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.4);
-            margin-top: 16px;
-            letter-spacing: 2px;
-        }
-
-        /* --- メインコンテンツ --- */
-        main {
-            position: relative;
-            z-index: 10;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px 20px 80px;
-        }
-
-        .section-title {
-            font-size: 14px;
+            margin-top: 26px;
+            font-size: 15px;
             font-weight: 500;
-            letter-spacing: 0.2em;
-            color: var(--purple);
-            opacity: 0.6;
-            text-align: center;
-            margin-bottom: 40px;
+            color: var(--ink-soft);
+            letter-spacing: 0.14em;
         }
 
-        /* --- ゲームカード --- */
-        .cards {
+        /* ---------- 棚 ---------- */
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 44px 24px 30px;
+        }
+
+        .shelf {
+            list-style: none;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            align-items: stretch;
         }
 
-        .card {
-            position: relative;
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
+        .cart {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border-radius: 18px 18px 10px 10px;
+            padding: 26px 22px 24px;
             text-decoration: none;
-            color: inherit;
-            display: block;
-            transition: transform 0.3s, border-color 0.3s;
-            backdrop-filter: blur(8px);
+            color: #fff;
+            position: relative;
+            box-shadow:
+                inset 0 -7px 0 rgba(0, 0, 0, 0.22),
+                0 14px 28px rgba(43, 42, 51, 0.16);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
-        .card::before {
+        /* カートリッジ上部のギザギザ（差し込み口） */
+        .cart::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--purple), var(--blue));
-            opacity: 0;
-            transition: opacity 0.3s;
+            top: 9px;
+            left: 22px;
+            right: 22px;
+            height: 8px;
+            border-radius: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.32) 0 12px,
+                transparent 12px 22px
+            );
         }
 
-        .card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(139,92,246,0.5);
+        .cart:hover, .cart:focus-visible {
+            transform: translateY(-8px);
+            box-shadow:
+                inset 0 -7px 0 rgba(0, 0, 0, 0.22),
+                0 24px 40px rgba(43, 42, 51, 0.24);
         }
 
-        .card:hover::before { opacity: 1; }
-
-        .card-thumb {
-            width: 100%;
-            height: 180px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 80px;
-            position: relative;
-            overflow: hidden;
+        .cart:focus-visible {
+            outline: 3px dashed var(--ink);
+            outline-offset: 4px;
         }
 
-        .card-thumb-kanjimon {
-            background: linear-gradient(135deg, #0a2814 0%, #114a26 50%, #052010 100%);
-            font-family: 'Noto Sans JP', sans-serif;
-            font-weight: 900;
-            color: #fff;
+        .cart-kanjimon { background: linear-gradient(170deg, var(--green) 0%, var(--green-deep) 100%); }
+        .cart-bigfive  { background: linear-gradient(170deg, var(--purple) 0%, var(--purple-deep) 100%); }
+        .cart-clock    {
+            background:
+                radial-gradient(1.5px 1.5px at 22% 30%, rgba(255,255,255,0.9) 0%, transparent 100%),
+                radial-gradient(1px 1px at 68% 18%, rgba(255,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 82% 52%, rgba(255,255,255,0.8) 0%, transparent 100%),
+                radial-gradient(1px 1px at 40% 64%, rgba(255,255,255,0.6) 0%, transparent 100%),
+                radial-gradient(1px 1px at 12% 78%, rgba(255,255,255,0.5) 0%, transparent 100%),
+                linear-gradient(170deg, var(--night) 0%, var(--night-deep) 100%);
         }
 
-        .card-thumb-bigfive-diagnosis {
-            background: linear-gradient(135deg, #1a0428 0%, #2d0a3e 50%, #0d0520 100%);
+        /* 白いラベルシール */
+        .cart-label {
+            background: var(--paper);
+            border-radius: 12px;
+            margin: 14px 0 18px;
+            padding: 22px 10px 18px;
+            text-align: center;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
         }
 
-        .card-thumb-clock {
-            background: linear-gradient(135deg, #1a0a2e 0%, #2a0d45 50%, #0d0518 100%);
+        .cart-icon {
+            font-family: 'RocknRoll One', sans-serif;
+            font-size: 64px;
+            line-height: 1;
+            display: block;
         }
 
-        .thumb-icon {
-            position: relative;
-            z-index: 2;
-            filter: drop-shadow(0 0 16px rgba(139,92,246,0.6));
-        }
+        .cart-kanjimon .cart-icon { color: var(--green-deep); }
+        .cart-bigfive  .cart-icon { color: var(--purple-deep); }
+        .cart-clock    .cart-icon { color: var(--night-deep); }
 
-        .card-thumb-clock .thumb-icon {
-            filter: drop-shadow(0 0 16px rgba(139,92,246,0.6));
-        }
-
-        .card-body {
-            padding: 20px 24px 24px;
-        }
-
-        .card-tag {
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 0.15em;
-            color: var(--purple);
-            opacity: 0.6;
+        .cart-tag {
+            font-family: 'DotGothic16', monospace;
+            font-size: 12px;
+            letter-spacing: 0.22em;
+            opacity: 0.85;
             margin-bottom: 8px;
         }
 
-        .card-title {
-            font-size: 20px;
-            font-weight: 700;
+        .cart-title {
+            font-family: 'RocknRoll One', sans-serif;
+            font-weight: 400;
+            font-size: 22px;
+            letter-spacing: 0.03em;
             margin-bottom: 10px;
-            color: #fff;
         }
 
-        .card-desc {
-            font-size: 13px;
-            line-height: 1.7;
-            color: rgba(255, 255, 255, 0.5);
+        .cart-desc {
+            font-size: 13.5px;
+            line-height: 1.85;
+            opacity: 0.92;
+            flex: 1;
             margin-bottom: 20px;
         }
 
-        .card-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-family: inherit;
-            font-size: 12px;
+        .cart-btn {
+            align-self: flex-start;
+            background: #fff;
+            border-radius: 999px;
+            padding: 9px 22px;
+            font-size: 14px;
             font-weight: 700;
             letter-spacing: 0.1em;
-            color: var(--purple);
-            border: 1px solid rgba(139,92,246,0.4);
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: background 0.3s;
         }
 
-        .card:hover .card-btn {
-            background: rgba(139,92,246,0.15);
+        .cart-kanjimon .cart-btn { color: var(--green-deep); }
+        .cart-bigfive  .cart-btn { color: var(--purple-deep); }
+        .cart-clock    .cart-btn { color: var(--night-deep); }
+
+        /* 棚板 */
+        .shelf-board {
+            height: 14px;
+            border-radius: 7px;
+            background: var(--ink);
+            opacity: 0.88;
+            margin: 34px 6px 0;
+            box-shadow: 0 10px 18px rgba(43, 42, 51, 0.25);
         }
 
-        /* --- フッター --- */
+        /* ---------- フッター ---------- */
         footer {
-            position: relative;
-            z-index: 10;
             text-align: center;
-            padding: 30px 20px;
-            border-top: 1px solid rgba(139,92,246,0.08);
+            padding: 40px 20px 34px;
         }
 
         .footer-line {
+            font-family: 'DotGothic16', monospace;
             font-size: 12px;
-            letter-spacing: 3px;
-            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 0.32em;
+            text-indent: 0.32em;
+            color: var(--ink-soft);
         }
 
-        .dot {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background: var(--purple);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--purple);
-            vertical-align: middle;
-            margin-right: 6px;
-            animation: dot-pulse 2s infinite;
-        }
-        @keyframes dot-pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
+        /* ---------- 動き ---------- */
+        @keyframes slotIn {
+            from { transform: translateY(-18px); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
         }
 
-        /* レスポンシブ */
-        @media (max-width: 600px) {
-            header { padding: 40px 16px 30px; }
-            .cards { grid-template-columns: 1fr; }
+        .shelf li { animation: slotIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+        .shelf li:nth-child(1) { animation-delay: 0.05s; }
+        .shelf li:nth-child(2) { animation-delay: 0.16s; }
+        .shelf li:nth-child(3) { animation-delay: 0.27s; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .shelf li { animation: none; }
+            .cart, .cart:hover { transition: none; transform: none; }
+        }
+
+        /* ---------- レスポンシブ ---------- */
+        @media (max-width: 840px) {
+            header { padding-top: 52px; }
+            .shelf { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+            .shelf-board { display: none; }
+            main { padding-bottom: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-nebula"></div>
-    <div class="bg-stars" id="bgStars"></div>
-
     <header>
-        <p class="logo-sub">ASOBI LAB</p>
-        <h1 class="logo-main">あそびラボ</h1>
-        <p class="logo-en">ASOBI LAB</p>
-        <div class="header-line"></div>
-        <p class="tagline"><span class="dot"></span>無料で遊べるブラウザゲーム・インタラクティブコンテンツ</p>
+        <p class="eyebrow">ASOBI LAB</p>
+        <h1 class="logo">あそび<span class="labo">ラボ</span></h1>
+        <p class="tagline">つくって、あそんで、ためしてみる。ちいさな実験室。</p>
     </header>
 
     <main>
-        <p class="section-title">// CONTENTS //</p>
+        <ul class="shelf">
 
-        <div class="cards">
+            <li>
+                <a class="cart cart-kanjimon" href="https://kanjimon.jr-genius.jp" target="_blank" rel="noopener">
+                    <div class="cart-label"><span class="cart-icon">漢</span></div>
+                    <p class="cart-tag">KANJI RPG</p>
+                    <h2 class="cart-title">かんじモンRPG</h2>
+                    <p class="cart-desc">小学1年生の漢字がモンスターになって登場。よみクイズで倒して、つかまえて、育てて進化。フィールドを探検しながら、遊ぶだけで漢字が覚えられる。</p>
+                    <span class="cart-btn">あそぶ ▶</span>
+                </a>
+            </li>
 
-            <!-- かんじモンRPG -->
-            <a class="card" href="https://kanjimon.jr-genius.jp" target="_blank">
-                <div class="card-thumb card-thumb-kanjimon">
-                    <span class="thumb-icon" style="filter: drop-shadow(0 0 16px rgba(74,222,128,0.7));">漢</span>
-                </div>
-                <div class="card-body">
-                    <p class="card-tag">Kanji RPG</p>
-                    <h2 class="card-title">かんじモンRPG</h2>
-                    <p class="card-desc">小学1年生の漢字がモンスターになって登場！よみクイズで倒して、つかまえて、育てて進化させるポケモン風学習RPG。フィールドを探検しながら遊ぶだけで漢字が覚えられます。</p>
-                    <span class="card-btn">▶ PLAY NOW</span>
-                </div>
-            </a>
+            <li>
+                <a class="cart cart-bigfive" href="https://bigfive.jr-genius.jp" target="_blank" rel="noopener">
+                    <div class="cart-label"><span class="cart-icon">心</span></div>
+                    <p class="cart-tag">PERSONALITY TEST</p>
+                    <h2 class="cart-title">ビッグファイブ性格診断</h2>
+                    <p class="cart-desc">心理学のビッグファイブ理論で、性格を5つの因子から分析。3125タイプの中から、あなただけのキャラクターが見つかる。チームの相性診断も。</p>
+                    <span class="cart-btn">しんだんする ▶</span>
+                </a>
+            </li>
 
-            <!-- ビッグファイブ性格診断 -->
-            <a class="card" href="https://bigfive.jr-genius.jp" target="_blank">
-                <div class="card-thumb card-thumb-bigfive-diagnosis">
-                    <span class="thumb-icon" style="filter: drop-shadow(0 0 16px rgba(236,72,153,0.7));">🔮</span>
-                </div>
-                <div class="card-body">
-                    <p class="card-tag">Personality Test</p>
-                    <h2 class="card-title">ビッグファイブ<br>性格診断</h2>
-                    <p class="card-desc">心理学の「ビッグファイブ理論」で自分の性格を5因子で分析。3125タイプの中からあなただけのキャラクターを発見。相性診断も！</p>
-                    <span class="card-btn">▶ DIAGNOSE</span>
-                </div>
-            </a>
+            <li>
+                <a class="cart cart-clock" href="clock/index.html" rel="noopener">
+                    <div class="cart-label"><span class="cart-icon">時</span></div>
+                    <p class="cart-tag">INTERACTIVE CLOCK</p>
+                    <h2 class="cart-title">幻想からくり時計</h2>
+                    <p class="cart-desc">音と光のアニメーションで時を刻む、ながめるための時計。仕事の合間に、ねむる前に。今日の時間が少しだけ好きになる。</p>
+                    <span class="cart-btn">ながめる ▶</span>
+                </a>
+            </li>
 
-            <!-- 幻想からくり時計 -->
-            <a class="card card-clock" href="clock/index.html">
-                <div class="card-thumb card-thumb-clock">
-                    <span class="thumb-icon">⏰</span>
-                </div>
-                <div class="card-body">
-                    <p class="card-tag">Interactive Clock</p>
-                    <h2 class="card-title">幻想<br>からくり時計</h2>
-                    <p class="card-desc">幻想的なアニメーションで時間を表示するインタラクティブな時計。音楽に合わせて動く美しいビジュアルをお楽しみください。</p>
-                    <span class="card-btn">▶ OPEN</span>
-                </div>
-            </a>
-
-        </div>
+        </ul>
+        <div class="shelf-board" aria-hidden="true"></div>
     </main>
 
     <footer>
-        <p class="footer-line">ASOBI LAB &mdash; Free Browser Contents</p>
+        <p class="footer-line">ASOBI LAB — きょうも じっけんちゅう</p>
     </footer>
 
-    <script>
-    // ===== 星をランダム配置 =====
-    (function() {
-        const el = document.getElementById('bgStars');
-        let css = '';
-        const total = 80;
-        const bright = new Set();
-        const superBright = new Set();
-        while (superBright.size < 10) superBright.add(Math.floor(Math.random() * total));
-        while (bright.size < 20) {
-            const n = Math.floor(Math.random() * total);
-            if (!superBright.has(n)) bright.add(n);
-        }
-        for (let i = 0; i < total; i++) {
-            const x = Math.random() * 100;
-            const y = Math.random() * 100;
-            if (superBright.has(i)) {
-                const s = Math.random() * 2 + 3;
-                const o = Math.random() * 0.2 + 0.8;
-                css += `radial-gradient(${s}px ${s}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, transparent 100%)`;
-                css += `, radial-gradient(${s*4}px ${s*4}px at ${x}% ${y}%, rgba(200,210,255,${o*0.4}) 0%, transparent 100%)`;
-                css += `, radial-gradient(${s*8}px ${s*8}px at ${x}% ${y}%, rgba(140,160,255,${o*0.15}) 0%, transparent 100%)`;
-            } else if (bright.has(i)) {
-                const s = Math.random() * 2 + 2;
-                const o = Math.random() * 0.3 + 0.7;
-                css += `radial-gradient(${s}px ${s}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, transparent 100%)`;
-                css += `, radial-gradient(${s*3}px ${s*3}px at ${x}% ${y}%, rgba(180,200,255,${o*0.3}) 0%, transparent 100%)`;
-            } else {
-                const s = Math.random() * 1.5 + 0.5;
-                const o = Math.random() * 0.5 + 0.2;
-                css += `radial-gradient(${s}px ${s}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, transparent 100%)`;
-            }
-            if (i < total - 1) css += ', ';
-        }
-        el.style.backgroundImage = css;
-    })();
-    </script>
 </body>
 </html>
