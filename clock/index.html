@@ -63,6 +63,7 @@
         hr { border: 0; border-top: 1px solid #444; margin: 20px 0; }
         input[type="file"] { font-size: 14px; padding: 10px 0; width: 100%; }
     </style>
+    <link rel="stylesheet" href="clock-show.css?v=2">
 </head>
 <body onmousedown="initAudio()">
     <div style="display:none;">
@@ -70,7 +71,7 @@
         <video id="source-vid" playsinline muted></video>
     </div>
     <canvas id="clockCanvas"></canvas>
-    <div id="golden-button" onclick="playManual()"></div>
+    <button type="button" id="golden-button" onclick="playManual()" aria-label="からくりを みる"><span id="clock-hint" hidden>おしてみて</span></button>
     <div id="config-btn" onclick="togglePanel()">⚙</div>
 
     <div id="panel" class="hidden">
@@ -131,6 +132,7 @@
         <button class="close-btn" onclick="togglePanel()">設定を閉じる</button>
     </div>
 
+    <script src="hill-dial.js?v=1"></script>
     <script>
         let db, audioCtx;
         const canvas = document.getElementById('clockCanvas');
@@ -159,17 +161,18 @@
         let isPlayingVid = false;
         let isPreviewMode = false;
         let currentTarget = 'layer0';
-        let crystalHandImg = null;
         let handImages = {};
 
         // IndexedDB
         const dbReq = indexedDB.open("KarakuriDB_v33", 1);
+        const mediaReady = new Promise(resolve => {
+            dbReq.addEventListener('success', () => resolve(dbReq.result), {once: true});
+            dbReq.addEventListener('error', () => resolve(null), {once: true});
+        });
         dbReq.onupgradeneeded = e => e.target.result.createObjectStore("media", { keyPath: "id" });
         dbReq.onsuccess = e => { db = e.target.result; loadBackground(); updateVideoFileList(); };
 
         function loadHandImages() {
-            crystalHandImg = new Image();
-            crystalHandImg.src = 'crystal（針デザイン）.png';
             handImages.spade_hour   = new Image(); handImages.spade_hour.src   = 'spade（時針デザイン）.png';
             handImages.spade_minute = new Image(); handImages.spade_minute.src = 'spade（分針デザイン）.png';
             handImages.crystal_hour   = new Image(); handImages.crystal_hour.src   = 'crystal（時針デザイン）.png';
@@ -252,13 +255,19 @@
             else if (config.shape === 'square') ctx.rect(-baseR, -baseR, baseR * 2, baseR * 2);
             ctx.clip();
 
+            let background = null;
             if (sourceImg.complete && sourceImg.naturalWidth > 0) {
                 const m = mediaMap['layer0'] || { s:1, x:0, y:0 };
                 const aspect = sourceImg.naturalWidth / sourceImg.naturalHeight;
                 const h = baseR * 2.6 * m.s; const w = h * aspect;
-                ctx.drawImage(sourceImg, -w/2 + m.x, -h/2 + m.y, w, h);
+                background = {image:sourceImg, x:-w/2 + m.x, y:-h/2 + m.y, width:w, height:h};
+                ctx.drawImage(sourceImg, background.x, background.y, w, h);
             }
 
+            if (!isPlayingVid && !isPreviewMode && (!background || showStarted !== null)) {
+                const elapsed = showStarted === null ? 0 : (performance.now() - showStarted) / 1000;
+                drawHillDial(ctx, baseR, config.shape, elapsed, background, motion.matches);
+            }
             if (isPreviewMode && previewImage && !isPlayingVid) {
                 const mv = mediaMap[currentTarget] || { s:1, x:0, y:0 };
                 ctx.save(); ctx.globalAlpha = 0.5;
@@ -277,6 +286,7 @@
             ctx.restore();
 
             drawClockFace(cx, cy, baseR);
+            drawClockHands(cx, cy, baseR);
 
             const now = new Date();
             const s = now.getSeconds();
@@ -320,10 +330,23 @@
                     ctx.fillText(txt, rx * Math.cos(a), ry * Math.sin(a));
                 }
             }
+            ctx.restore();
+        }
+
+        function drawClockHands(cx, cy, baseR) {
             const n = new Date();
+            ctx.save();
+            ctx.translate(cx, cy);
             drawHand((n.getHours()%12+n.getMinutes()/60)*30-90, baseR*0.5, baseR*0.06, config.colorHand, config.handDesign, 'hour');
             drawHand(n.getMinutes()*6-90, baseR*0.75, baseR*0.035, config.colorHand, config.handDesign, 'minute');
             drawHand(n.getSeconds()*6-90, baseR*0.9, 2, "red", "standard", 'second');
+            ctx.beginPath();
+            ctx.arc(0, 0, baseR * .026, 0, 2*Math.PI);
+            ctx.fillStyle = '#dfbc81';
+            ctx.fill();
+            ctx.strokeStyle = '#443b35';
+            ctx.lineWidth = 1;
+            ctx.stroke();
             ctx.restore();
         }
 
@@ -345,7 +368,7 @@
 
         function drawHand(deg, len, w, col, d, handType) {
             ctx.save(); ctx.rotate(deg*Math.PI/180); ctx.strokeStyle = ctx.fillStyle = col; ctx.lineWidth = w; ctx.lineCap = "round";
-            ctx.shadowBlur = 8; ctx.shadowColor = col;
+            ctx.shadowBlur = 3; ctx.shadowColor = /^#(?:0{6}|0{3})$/i.test(col) ? '#fff' : '#231c24';
             ctx.beginPath();
             if(d==='spade'){
                 // ── スペード針：球(ピボット)→細軸→節→スペード頭 ──
@@ -430,16 +453,82 @@
             ctx.restore();
         }
 
-        function playManual() {
-            if (isPlayingVid) return;
-            initAudio();
-            db.transaction("media").objectStore("media").getAllKeys().onsuccess = e => {
+        const clockHint = document.getElementById('clock-hint');
+        const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let showStarted = null;
+        let lastScheduleHour = null;
+        const goldenButton = document.getElementById('golden-button');
+        const hintKey = 'clock_v33_manual_tried';
+        clockHint.hidden = localStorage.getItem(hintKey) === '1';
+        let showTimer;
+        let chimes = [];
+        let selectingVideo = false;
+
+        function finishShow() {
+            clearTimeout(showTimer);
+            showStarted = null;
+            goldenButton.classList.remove('playing');
+            for (const note of chimes) note.stop();
+            chimes = [];
+        }
+
+        function playClockShow() {
+            if (showStarted !== null || isPlayingVid || document.hidden) return;
+            showStarted = performance.now();
+            isPreviewMode = false;
+            updatePreviewBtn();
+            goldenButton.classList.add('playing');
+            showTimer = setTimeout(finishShow, 8000);
+            if (!audioCtx) return;
+            const start = audioCtx.currentTime;
+            for (const [offset, pitch] of [[.15, 523.25], [1.8, 659.25], [2.55, 587.33], [4.25, 783.99], [5.4, 1046.5]]) {
+                const note = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const at = start + offset;
+                note.frequency.value = pitch;
+                gain.gain.setValueAtTime(.0001, at);
+                gain.gain.exponentialRampToValueAtTime(.075, at + .02);
+                gain.gain.exponentialRampToValueAtTime(.0001, at + .85);
+                note.connect(gain);
+                gain.connect(audioCtx.destination);
+                note.onended = () => { note.disconnect(); gain.disconnect(); };
+                note.start(at);
+                note.stop(at + .86);
+                chimes.push(note);
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && showStarted !== null) finishShow();
+        });
+
+        async function playManual() {
+            if (isPlayingVid || selectingVideo || showStarted !== null) return;
+            selectingVideo = true;
+            try {
+                initAudio();
+            } catch {
+                // 音声が使えない端末でも小窓は動かす。
+            }
+            clockHint.hidden = true;
+            localStorage.setItem(hintKey, '1');
+            const mediaDb = await mediaReady;
+            if (!mediaDb) {
+                selectingVideo = false;
+                playClockShow();
+                return;
+            }
+            const query = mediaDb.transaction("media").objectStore("media").getAllKeys();
+            query.onerror = () => { selectingVideo = false; playClockShow(); };
+            query.onsuccess = e => {
+                selectingVideo = false;
+                if (isPlayingVid || document.hidden) return;
                 const suffix = '_p' + currentPattern;
                 // 現在パターンの動画スロットだけ抽出
                 const slots = e.target.result
                     .filter(k => k.startsWith('vid_') && k.endsWith(suffix))
                     .map(k => k.slice(0, -suffix.length));
-                if(!slots.length) return alert("このパターンに動画が登録されていません");
+                if (!slots.length) return playClockShow();
                 // レア動画(vid_7, vid_8)は通常の1/5の確率
                 const weighted = [];
                 slots.forEach(slot => {
@@ -453,19 +542,32 @@
 
         // slot = "vid_1" など。DBキーはパターン付き（vid_1_p1 など）
         function startVid(slot) {
-            const dbKey = slot + '_p' + currentPattern;
-            db.transaction("media").objectStore("media").get(dbKey).onsuccess = e => {
-                if(e.target.result) {
+            if (selectingVideo || isPlayingVid || showStarted !== null || document.hidden) return;
+            selectingVideo = true;
+            const pattern = currentPattern;
+            const dbKey = slot + '_p' + pattern;
+            const request = db.transaction("media").objectStore("media").get(dbKey);
+            request.onerror = () => { selectingVideo = false; };
+            request.onsuccess = e => {
+                selectingVideo = false;
+                if(e.target.result && pattern === currentPattern && !document.hidden) {
                     if(!mediaMap[slot]) mediaMap[slot] = { s:1, x:0, y:0 };
                     currentTarget = slot; isPlayingVid = true; isPreviewMode = false;
-                    document.getElementById('golden-button').classList.add('playing');
-                    sourceVid.src = URL.createObjectURL(e.target.result.data);
-                    sourceVid.muted = false; sourceVid.play();
-                    sourceVid.onended = () => {
+                    goldenButton.classList.add('playing');
+                    const url = URL.createObjectURL(e.target.result.data);
+                    const finish = () => {
+                        if (sourceVid.src !== url) return;
+                        sourceVid.onended = sourceVid.onerror = null;
                         isPlayingVid = false; currentTarget = 'layer0';
-                        document.getElementById('golden-button').classList.remove('playing');
-                        sourceVid.src = "";
+                        goldenButton.classList.remove('playing');
+                        sourceVid.removeAttribute('src');
+                        sourceVid.load();
+                        URL.revokeObjectURL(url);
                     };
+                    sourceVid.onended = sourceVid.onerror = finish;
+                    sourceVid.src = url;
+                    sourceVid.muted = false;
+                    sourceVid.play().catch(finish);
                 }
             };
         }
@@ -596,17 +698,35 @@
             for(let h=6; h<=23; h++){
                 const d = document.createElement('div');
                 d.className = "sched-item";
-                d.innerHTML = `<span>${h}時</span><input type="number" min="0" max="8" value="${config.schedule[h]}" style="width:60px" onchange="config.schedule[${h}]=parseInt(this.value);saveCurrentPattern()">`;
+                const label = document.createElement('label');
+                label.textContent = h + '時';
+                const select = document.createElement('select');
+                select.id = 'schedule-' + h;
+                label.htmlFor = select.id;
+                select.add(new Option('なし', '0'));
+                select.add(new Option('内蔵からくり', 'hill'));
+                for (let slot=1; slot<=8; slot++) select.add(new Option('動画 ' + slot, String(slot)));
+                select.value = String(config.schedule[h] || 0);
+                select.onchange = () => {
+                    config.schedule[h] = select.value === 'hill' ? 'hill' : Number(select.value);
+                    saveCurrentPattern();
+                };
+                d.append(label, select);
                 g.appendChild(d);
             }
         }
 
         function checkSchedule() {
-            const n = new Date(); const h = n.getHours();
-            if(h >= 6 && h <= 23 && n.getMinutes()===0 && n.getSeconds()===0 && !isPlayingVid) {
-                const vidId = config.schedule[h];
-                if(vidId > 0) startVid("vid_" + vidId);
-            }
+            const now = new Date();
+            const hour = now.getHours();
+            if (document.hidden || hour < 6 || now.getMinutes() !== 0 || now.getSeconds() > 1) return;
+            const stamp = Math.floor(now.getTime() / 3600000);
+            if (stamp === lastScheduleHour) return;
+            lastScheduleHour = stamp;
+            if (showStarted !== null || isPlayingVid || selectingVideo) return;
+            const slot = config.schedule[hour];
+            if (slot === 'hill') playClockShow();
+            else if (slot > 0 && db) startVid('vid_' + slot);
         }
 
         // ① 新機能：データ一括消去
