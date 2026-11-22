@@ -131,14 +131,14 @@
                 <select id="chime-sound" aria-label="内蔵からくりの音">
                     <option value="original">星の丘のメロディ</option>
                     <option value="westminster">学校のチャイム</option>
-                    <option value="bigben">ビッグベンの時報</option>
+                    <option value="bigben" selected>ビッグベンの時報</option>
                 </select>
                 <div id="tower-preview" hidden>
                     <label for="tower-hour">試聴する時刻</label>
                     <select id="tower-hour"></select>
                     <small id="tower-duration"></small>
                 </div>
-                <button id="chime-preview" type="button">学校のチャイムを試聴</button>
+                <button id="chime-preview" type="button">時報を試聴</button>
                 <small>時報にするには、鳴らしたい時刻で「内蔵からくり」を選びます。</small>
             </fieldset>
             <div id="schedGrid" class="sched-grid"></div>
@@ -164,14 +164,18 @@
         let patternNames = JSON.parse(localStorage.getItem('clock_v33_pnames')) || ['パターン1', 'パターン2', 'パターン3'];
 
         function defaultConfig() {
-            return { shape: 'circle', handDesign: 'standard', indexType: 'roman', schedule: Array(24).fill(0), colorFrame: '#d4af37', colorText: '#ffffff', colorHand: '#ffffff' };
+            return { chimeSound: 'bigben', shape: 'circle', handDesign: 'standard', indexType: 'roman', schedule: Array(24).fill(0), colorFrame: '#d4af37', colorText: '#ffffff', colorHand: '#ffffff' };
         }
         function defaultMap() { return { layer0: { s: 1.0, x: 0, y: 0 } }; }
 
         function cfgKey(n) { return 'clock_v33_cfg_p' + (n || currentPattern); }
         function mapKey(n) { return 'clock_v33_map_p' + (n || currentPattern); }
 
-        let config = JSON.parse(localStorage.getItem(cfgKey())) || defaultConfig();
+        function loadConfig() {
+            return Object.assign(defaultConfig(), JSON.parse(localStorage.getItem(cfgKey())));
+        }
+
+        let config = loadConfig();
         let mediaMap = JSON.parse(localStorage.getItem(mapKey())) || defaultMap();
 
         let isPlayingVid = false;
@@ -707,7 +711,7 @@
             saveCurrentPattern();
             currentPattern = n;
             localStorage.setItem('clock_v33_pattern', n);
-            config = JSON.parse(localStorage.getItem(cfgKey())) || defaultConfig();
+            config = loadConfig();
             mediaMap = JSON.parse(localStorage.getItem(mapKey())) || defaultMap();
             loadBackground();
             if(db) updateVideoFileList();
