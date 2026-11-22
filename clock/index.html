@@ -63,7 +63,7 @@
         hr { border: 0; border-top: 1px solid #444; margin: 20px 0; }
         input[type="file"] { font-size: 14px; padding: 10px 0; width: 100%; }
     </style>
-    <link rel="stylesheet" href="clock-show.css?v=2">
+    <link rel="stylesheet" href="clock-show.css?v=3">
 </head>
 <body onmousedown="initAudio()">
     <div style="display:none;">
@@ -126,12 +126,28 @@
         </div>
 
         <div id="tab-schedule" class="tab-content hidden">
+            <fieldset class="chime-settings">
+                <legend>内蔵からくりの音</legend>
+                <select id="chime-sound" aria-label="内蔵からくりの音">
+                    <option value="original">星の丘のメロディ</option>
+                    <option value="westminster">学校のチャイム</option>
+                    <option value="bigben">ビッグベンの時報</option>
+                </select>
+                <div id="tower-preview" hidden>
+                    <label for="tower-hour">試聴する時刻</label>
+                    <select id="tower-hour"></select>
+                    <small id="tower-duration"></small>
+                </div>
+                <button id="chime-preview" type="button">学校のチャイムを試聴</button>
+                <small>時報にするには、鳴らしたい時刻で「内蔵からくり」を選びます。</small>
+            </fieldset>
             <div id="schedGrid" class="sched-grid"></div>
         </div>
         
         <button class="close-btn" onclick="togglePanel()">設定を閉じる</button>
     </div>
 
+    <script src="westminster.js?v=2"></script>
     <script src="hill-dial.js?v=1"></script>
     <script>
         let db, audioCtx;
@@ -188,9 +204,11 @@
             setInterval(checkSchedule, 1000);
         }
 
-        function initAudio() { 
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
-            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+        function initAudio() {
+            const Audio = window.AudioContext || window.webkitAudioContext;
+            if (!Audio) return;
+            if (!audioCtx) audioCtx = new Audio();
+            if (audioCtx.state !== 'running') audioCtx.resume().catch(() => {});
         }
 
         /* --- プレビューロジック（保護） --- */
@@ -464,6 +482,56 @@
         let chimes = [];
         let selectingVideo = false;
 
+        const soundChoice = document.getElementById('chime-sound');
+        const chimePreview = document.getElementById('chime-preview');
+        const towerHour = document.getElementById('tower-hour');
+        for (let hour = 1; hour <= 12; hour++) towerHour.add(new Option(hour + '時', String(hour)));
+        towerHour.value = String(towerStrikeCount(new Date().getHours()));
+        let lastTowerArm = null;
+        let stopBell = null;
+        let previewingBell = false;
+
+        function resetBell() {
+            if (stopBell) stopBell();
+            stopBell = null;
+            previewingBell = false;
+            refreshBellControls();
+        }
+
+        function refreshBellControls() {
+            const tower = soundChoice.value === 'bigben';
+            document.getElementById('tower-preview').hidden = !tower;
+            const count = Number(towerHour.value);
+            const seconds = Math.round(towerLeadSeconds + (count - 1) * towerStrikeInterval + towerDecay);
+            document.getElementById('tower-duration').textContent = '旋律のあとに大鐘が' + count + '回。余韻まで約' + seconds + '秒。';
+            chimePreview.textContent = stopBell ? '鐘を止める' : tower ? '時報を試聴' : '学校のチャイムを試聴';
+        }
+        towerHour.onchange = () => { if (previewingBell) resetBell(); refreshBellControls(); };
+
+        function playBell(preview, options) {
+            resetBell();
+            if (!audioCtx || document.hidden) return;
+            previewingBell = preview;
+            stopBell = ringWestminster(audioCtx, () => {
+                stopBell = null;
+                resetBell();
+            }, options);
+            refreshBellControls();
+        }
+
+        soundChoice.onchange = () => {
+            lastTowerArm = null;
+            resetBell();
+            config.chimeSound = soundChoice.value;
+            saveCurrentPattern();
+        };
+        chimePreview.onclick = () => {
+            if (stopBell) return resetBell();
+            initAudio();
+            if (showStarted !== null) finishShow();
+            if (!isPlayingVid && !selectingVideo) playBell(true, {hour: soundChoice.value === 'bigben' ? Number(towerHour.value) : null});
+        };
+
         function finishShow() {
             clearTimeout(showTimer);
             showStarted = null;
@@ -472,14 +540,24 @@
             chimes = [];
         }
 
-        function playClockShow() {
+        function playClockShow(towerScheduled = false) {
             if (showStarted !== null || isPlayingVid || document.hidden) return;
             showStarted = performance.now();
             isPreviewMode = false;
             updatePreviewBtn();
             goldenButton.classList.add('playing');
             showTimer = setTimeout(finishShow, 8000);
+            if (towerScheduled) return;
+            resetBell();
             if (!audioCtx) return;
+            if (config.chimeSound === 'bigben') {
+                playBell(false, {hour: new Date().getHours()});
+                return;
+            }
+            if (config.chimeSound === 'westminster') {
+                playBell(false);
+                return;
+            }
             const start = audioCtx.currentTime;
             for (const [offset, pitch] of [[.15, 523.25], [1.8, 659.25], [2.55, 587.33], [4.25, 783.99], [5.4, 1046.5]]) {
                 const note = audioCtx.createOscillator();
@@ -499,7 +577,11 @@
         }
 
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden && showStarted !== null) finishShow();
+            if (document.hidden) {
+                if (lastTowerArm > Date.now()) lastTowerArm = null;
+                resetBell();
+                if (showStarted !== null) finishShow();
+            }
         });
 
         async function playManual() {
@@ -553,6 +635,7 @@
                 if(e.target.result && pattern === currentPattern && !document.hidden) {
                     if(!mediaMap[slot]) mediaMap[slot] = { s:1, x:0, y:0 };
                     currentTarget = slot; isPlayingVid = true; isPreviewMode = false;
+                    resetBell();
                     goldenButton.classList.add('playing');
                     const url = URL.createObjectURL(e.target.result.data);
                     const finish = () => {
@@ -619,6 +702,8 @@
         }
 
         function loadPattern(n) {
+            lastTowerArm = null;
+            resetBell();
             saveCurrentPattern();
             currentPattern = n;
             localStorage.setItem('clock_v33_pattern', n);
@@ -656,6 +741,8 @@
         }
 
         function fillUI() {
+            soundChoice.value = ['westminster', 'bigben'].includes(config.chimeSound) ? config.chimeSound : 'original';
+            refreshBellControls();
             const opts = { shape:['circle','ellipse','octagon','square'], handDesign:['standard','spade','leaf','crystal','hollow'], indexType:['roman','arabic','dot','4main','none'] };
             Object.keys(opts).forEach(id => {
                 const el = document.getElementById(id); if(!el) return;
@@ -682,12 +769,14 @@
             r.readAsDataURL(f);
         }
 
-        function togglePanel() { 
+        function togglePanel() {
+            if (previewingBell) resetBell();
             document.getElementById('panel').classList.toggle('hidden'); 
             if(document.getElementById('panel').classList.contains('hidden')) { isPreviewMode = false; } else initAudio();
         }
 
-        function showTab(id) { 
+        function showTab(id) {
+            if (previewingBell && id !== 'schedule') resetBell();
             document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden')); 
             document.getElementById('tab-'+id).classList.remove('hidden'); 
         }
@@ -708,6 +797,10 @@
                 for (let slot=1; slot<=8; slot++) select.add(new Option('動画 ' + slot, String(slot)));
                 select.value = String(config.schedule[h] || 0);
                 select.onchange = () => {
+                    if (lastTowerArm > Date.now() && new Date(lastTowerArm).getHours() === h) {
+                        lastTowerArm = null;
+                        resetBell();
+                    }
                     config.schedule[h] = select.value === 'hill' ? 'hill' : Number(select.value);
                     saveCurrentPattern();
                 };
@@ -719,13 +812,31 @@
         function checkSchedule() {
             const now = new Date();
             const hour = now.getHours();
-            if (document.hidden || hour < 6 || now.getMinutes() !== 0 || now.getSeconds() > 1) return;
+            if (document.hidden) return;
+            const untilNextHour = 3600 - now.getMinutes()*60 - now.getSeconds() - now.getMilliseconds()/1000;
+            // 一秒ごとの検査で少し早めに音を予約し、大鐘の第一打を端末の正時に合わせる。
+            if (config.chimeSound === 'bigben' && untilNextHour <= towerLeadSeconds + 1) {
+                const boundary = now.getTime() + Math.round(untilNextHour * 1000);
+                const nextHour = new Date(boundary).getHours();
+                if (nextHour >= 6 && config.schedule[nextHour] === 'hill' && lastTowerArm !== boundary &&
+                    audioCtx?.state === 'running' && !isPlayingVid && !selectingVideo && showStarted === null && !stopBell) {
+                    playBell(false, {hour: nextHour, firstStrikeIn: untilNextHour});
+                    lastTowerArm = boundary;
+                }
+            }
+            if (hour < 6 || now.getMinutes() !== 0 || now.getSeconds() > 1) return;
             const stamp = Math.floor(now.getTime() / 3600000);
             if (stamp === lastScheduleHour) return;
             lastScheduleHour = stamp;
             if (showStarted !== null || isPlayingVid || selectingVideo) return;
             const slot = config.schedule[hour];
-            if (slot === 'hill') playClockShow();
+            if (slot === 'hill' && config.chimeSound === 'bigben') {
+                const boundary = now.getTime() - now.getSeconds()*1000 - now.getMilliseconds();
+                if (lastTowerArm !== boundary && audioCtx?.state === 'running') {
+                    playBell(false, {hour, firstStrikeIn: 0});
+                }
+                playClockShow(true);
+            } else if (slot === 'hill') playClockShow();
             else if (slot > 0 && db) startVid('vid_' + slot);
         }
 
